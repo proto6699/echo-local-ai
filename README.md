@@ -510,7 +510,15 @@ GPU/Vulkan use, reboot survival, Debian/Ubuntu installation, firewalld rules, th
 
 the interactive system prompt lives in [`neco/persona.md`](neco/persona.md). it reconstructs the agreed character: escaped lab subject, dry voice, slightly suspicious, living in the Den. the backstory is fiction; actual capabilities still come from the software.
 
-copy the file's contents into the **System Prompt** field for the Open WebUI model preset you use for Neco, save it, select that preset, and start a new chat. this is a manual setup step; pulling the repo does not change settings in your existing Open WebUI database. if you already have a working installation, paste the prompt directly—no rebuild is needed.
+`./scripts/set-token.sh` now installs and verifies that prompt automatically using your Open WebUI admin API key. it applies to the model named by `NECO_MODEL` in `.env`, so you do not need to create a second preset or paste anything. new model customization entries are named **Neco**; existing names and other settings are preserved. the account Personalization field can stay empty because the prompt belongs to the model.
+
+refresh the Den and start a new chat with that model after setup. for an existing installation with a saved token, run:
+
+```bash
+python3 scripts/setup-persona.py
+```
+
+rerunning the installer also attempts this when a token already exists. if first boot is still downloading or the key is missing/restricted, setup prints a retry instruction. use a key allowed to read models and create/update model settings. rerunning replaces that model's system prompt with `neco/persona.md` (including your `OWNER_NAME`), while preserving its other parameters and access grants. it affects chats using that model; it does not change other models or silently download one.
 
 this is the conversational persona. `neco/neco_monologue.py` keeps its separate short idle-message prompt, loaded by `neco/runtime.py`; changing the chat preset does not replace that daemon prompt. the conversational version can explain a problem properly without trying to fit every answer into two mildly irritated sentences.
 
@@ -524,9 +532,9 @@ the Den looks for:
 openwebui/overlay/static/den-music.mp3
 ```
 
-the repo intentionally does **not** ship my local music file.
+the repo now ships **tearreflection — upgrades**, the soundtrack supplied by the owner, at that path. it is included in the Docker image for every install. attribution is recorded in `THIRD_PARTY_NOTICES.md`; the track is not covered by the project’s MIT code license.
 
-drop your own local/redistributable MP3 there before rebuilding if you want the radio control to have something to play.
+the radio has a soundtrack out of the box. you can replace it locally with another MP3 before rebuilding.
 
 ### getting the radio playing
 
@@ -536,7 +544,7 @@ from the repo directory, install an MP3 you already have:
 ./scripts/set-music.sh "/full/path/to/your-song.mp3"
 ```
 
-this copies the file into the ignored music path and rebuilds/recreates the Den container. it does not add the song to Git. if the file is already there, you can run the same command with `openwebui/overlay/static/den-music.mp3` as its argument.
+this replaces the bundled music file locally and rebuilds/recreates the Den container. the replacement appears as a Git modification; it is not committed or pushed by the script. if the file is already there, you can run the same command with `openwebui/overlay/static/den-music.mp3` as its argument.
 
 the image now copies overlay assets into Open WebUI's backend static directory too: `/static` is served from there, not from the frontend build directory. older images could contain the song in the wrong place.
 
@@ -548,7 +556,7 @@ check the file is being served (replace the port if you changed it):
 curl -sS -I -m 5 http://localhost:3000/static/den-music.mp3
 ```
 
-expect `200` with an audio content type. a `404` means the file is absent from the running image; an HTML response is not a song, despite Neco's opinions about markup. the repository does not include the owner's original soundtrack, so a fresh clone needs your own MP3.
+expect `200` with an audio content type. a `404` means the file is absent from the running image; an HTML response is not a song, despite Neco's opinions about markup. fresh clones include the bundled soundtrack; playback may still require a click.
 
 ---
 

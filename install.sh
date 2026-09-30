@@ -202,6 +202,13 @@ RestartSec=5
 WantedBy=default.target
 EOF
 
+if [[ -s .runtime/neco_token ]]; then
+    say "[+] applying Neco personality to the configured model"
+    if ! python3 scripts/setup-persona.py; then
+        say "[i] once the Den is ready, retry: python3 scripts/setup-persona.py"
+    fi
+fi
+
 systemctl --user daemon-reload
 systemctl --user stop echo-local-ai-neco.service 2>/dev/null || true
 
@@ -229,7 +236,7 @@ echo "  2. set up Ollama (README: model backend), then verify normal chat works"
 echo "     Admin Settings > Connections > Ollama: http://host.docker.internal:11434"
 echo "     pull your model and match NECO_MODEL in .env to ollama list"
 echo "  3. create an Open WebUI API key"
-echo "  4. ./scripts/set-token.sh"
+echo "  4. ./scripts/set-token.sh  (also applies Neco personality automatically)"
 echo "  5. ./scripts/test-neco.sh"
 echo "  6. loginctl enable-linger \$USER"
 echo "  7. ./scripts/start-neco.sh"

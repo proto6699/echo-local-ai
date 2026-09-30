@@ -19,3 +19,10 @@ Model weights are not distributed by this repository.
 Third-party assets retain their own licenses.
 
 The repository intentionally does not ship the Den's local music file.
+
+## bundled soundtrack
+
+`openwebui/overlay/static/den-music.mp3`: **tearreflection — upgrades**.
+Supplied by the repository owner for inclusion as the Den soundtrack.
+Audio is excluded from the MIT code license; rights remain with its respective rights holders.
+No separate audio redistribution license was provided with the uploaded file.

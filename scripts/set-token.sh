@@ -10,3 +10,4 @@ printf '\n'
 printf '%s' "$TOKEN" > "$ROOT/.runtime/neco_token"
 chmod 600 "$ROOT/.runtime/neco_token"
 echo "Token saved."
+python3 "$ROOT/scripts/setup-persona.py"

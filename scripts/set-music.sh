@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Keep the user's soundtrack local, then bake it into the Den image.
+# Replace the bundled soundtrack locally, then bake it into the Den image.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 [[ $# == 1 && -f "$1" && -s "$1" && -r "$1" ]] || {
