@@ -506,6 +506,16 @@ GPU/Vulkan use, reboot survival, Debian/Ubuntu installation, firewalld rules, th
 
 ---
 
+## giving the chat neco’s personality
+
+the interactive system prompt lives in [`neco/persona.md`](neco/persona.md). it reconstructs the agreed character: escaped lab subject, dry voice, slightly suspicious, living in the Den. the backstory is fiction; actual capabilities still come from the software.
+
+copy the file's contents into the **System Prompt** field for the Open WebUI model preset you use for Neco, save it, select that preset, and start a new chat. this is a manual setup step; pulling the repo does not change settings in your existing Open WebUI database. if you already have a working installation, paste the prompt directly—no rebuild is needed.
+
+this is the conversational persona. `neco/neco_monologue.py` keeps its separate short idle-message prompt, loaded by `neco/runtime.py`; changing the chat preset does not replace that daemon prompt. the conversational version can explain a problem properly without trying to fit every answer into two mildly irritated sentences.
+
+---
+
 ## optional den music
 
 the Den looks for:
