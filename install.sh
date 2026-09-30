@@ -64,7 +64,19 @@ command -v systemctl >/dev/null 2>&1 || die "systemd/systemctl is required."
 # Docker's daemon may exist but not be running yet.
 if ! sudo systemctl is-active --quiet docker; then
     say "[+] starting Docker"
-    sudo systemctl enable --now docker
+    sudo systemctl reset-failed docker 2>/dev/null || true
+
+    if ! sudo systemctl enable --now docker; then
+        echo
+        echo "Docker failed to start. Recent daemon errors:"
+        echo "---------------------------------------------"
+        sudo journalctl -u docker.service -n 80 --no-pager 2>/dev/null \
+            | grep -Ei 'error|failed|fatal|daemon|iptables|nft|overlay|bridge|network' \
+            | tail -40 || true
+        echo "---------------------------------------------"
+        echo
+        die "Docker daemon failed to start. The log above contains the real cause."
+    fi
 fi
 
 # Use Docker directly when the current user already has permission.
