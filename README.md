@@ -234,7 +234,7 @@ local model
 the default is:
 
 ```env
-NECO_MODEL=glm4:9b
+NECO_MODEL=qwen2.5:0.5b
 ```
 
 change it to the model name Open WebUI actually exposes on your machine.
@@ -278,7 +278,7 @@ Neco — idle
 check:
 
 ```bash
-systemctl --user status echo-local-ai-neco.service
+systemctl --user --no-pager status echo-local-ai-neco.service
 ```
 
 watch:
@@ -297,13 +297,212 @@ because receiving a message every eleven seconds from the thing living in your c
 
 ```env
 OPENWEBUI_PORT=3000
-NECO_MODEL=glm4:9b
+NECO_MODEL=qwen2.5:0.5b
 NECO_CHAT_TITLE="Neco — idle"
 NECO_MIN_INTERVAL=1200
 NECO_MAX_INTERVAL=2700
 OWNER_NAME=Echo
 NECO_MACHINE="this machine"
 ```
+
+---
+
+## model backend (ollama)
+
+these instructions are for a Linux host with systemd. the fresh-install report came from a CachyOS laptop. the BC-250 is where this started, not a hardware requirement.
+
+on Arch/CachyOS, install the backend with a full system upgrade:
+
+```bash
+sudo pacman -Syu ollama ollama-vulkan
+```
+
+`ollama-vulkan` is the backend used in the laptop report. installing it does not prove GPU acceleration is working. while a model is loaded, run `ollama ps` and inspect the processor column.
+
+on Debian/Ubuntu, use the [upstream Linux installer](https://docs.ollama.com/linux):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y curl
+curl -fsSL https://ollama.com/install.sh -o /tmp/ollama-install.sh
+less /tmp/ollama-install.sh
+sh /tmp/ollama-install.sh
+```
+
+let the container reach Ollama on the host. this avoids the systemd editor's disappearing-comment trap. if you already have an `override.conf`, preserve its other settings when adding this environment line; the command below replaces that file.
+
+```bash
+sudo mkdir -p /etc/systemd/system/ollama.service.d
+printf '[Service]\nEnvironment="OLLAMA_HOST=0.0.0.0:11434"\n' | sudo tee /etc/systemd/system/ollama.service.d/override.conf
+sudo systemctl daemon-reload
+sudo systemctl enable --now ollama
+sudo systemctl restart ollama
+systemctl --no-pager show ollama -p Environment
+```
+
+that last restart matters if Ollama was already running. see the [upstream networking instructions](https://docs.ollama.com/faq). binding to all interfaces also makes the unauthenticated Ollama API reachable from other networks unless the host firewall restricts it. allow the Docker subnet below, not the whole internet.
+
+start small:
+
+```bash
+ollama pull qwen2.5:0.5b
+ollama list
+sed -i 's/^NECO_MODEL=.*/NECO_MODEL=qwen2.5:0.5b/' .env
+```
+
+`NECO_MODEL` must exactly match the name in `ollama list`, and that model must be visible to Neco's account in Open WebUI. changing `.env` does not download a model. rerunning the installer preserves your existing choice. after changing models on an already running setup:
+
+```bash
+systemctl --user restart echo-local-ai-neco.service
+```
+
+## model sizes
+
+approximate model downloads, separate from Docker and the embedding model. tags and download sizes can change; these are not RAM/VRAM requirements.
+
+| model | download | purpose |
+| --- | --- | --- |
+| `qwen2.5:0.5b` | about 0.4 GB | default smoke test; worked in the laptop report |
+| `llama3.2:3b` | about 2 GB | candidate for everyday use; not validated in that report |
+| `qwen2.5:3b` | about 2 GB | another everyday candidate; not validated in that report |
+| `glm4:9b` | about 5.5 GB | previous default; heavier download and memory demand |
+
+the tiny model proves the plumbing works. it does not promise particularly convincing gremlin literature. the 3B options should give the persona more room, but still need a real test. avoid small `qwen3` reasoning models for now: reasoning text may leak into messages; that path is not validated here.
+
+## connecting the den to ollama
+
+Compose now seeds `OLLAMA_BASE_URL` with `http://host.docker.internal:11434`. existing Open WebUI volumes can retain their saved connection settings instead; see [upstream configuration](https://docs.openwebui.com/reference/env-configuration/).
+
+in **Admin Settings → Connections**, enable the Ollama API, set that URL, verify, and save. then select the model and confirm ordinary chat works. create the API key under **Settings → Account → API keys** before running `./scripts/set-token.sh`.
+
+if host Ollama works but the container times out, inspect the actual Docker subnet:
+
+```bash
+sudo docker inspect echo-local-ai-webui --format '{{range $name, $net := .NetworkSettings.Networks}}{{$name}}{{"\n"}}{{end}}'
+# replace NETWORK_NAME with the name printed above:
+sudo docker network inspect NETWORK_NAME --format '{{range .IPAM.Config}}{{.Subnet}}{{"\n"}}{{end}}'
+```
+
+with active ufw, the laptop was fixed by:
+
+```bash
+sudo ufw allow from 172.16.0.0/12 to any port 11434 proto tcp
+sudo ufw reload
+```
+
+that range covers common Docker bridge subnets. prefer replacing it with the actual subnet printed above; custom Docker networks may be outside that range. the installer does not change your firewall.
+
+for firewalld, an **untested, port-scoped alternative** is below; replace the source with your actual Docker subnet before applying:
+
+```bash
+sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="172.16.0.0/12" port port="11434" protocol="tcp" accept'
+sudo firewall-cmd --reload
+```
+
+use the zone handling traffic to the host (`sudo firewall-cmd --get-active-zones`). putting that entire source range in `trusted` is broader: it permits all ports, so it is not the default suggestion here. firewall setups differ; rerun the container check after any change.
+
+the Den itself now binds to `127.0.0.1` by default. for deliberate LAN access, set `OPENWEBUI_BIND=0.0.0.0` in `.env` and recreate with `sudo docker compose up -d`. the Ollama listener is a separate setting.
+
+## first boot notes
+
+bring a connection with some patience. preferably one that is not billing you by the sigh.
+
+- the pinned Open WebUI base image is several GB. the installer warns and tries the pull up to three times, five seconds apart. completed layers remain cached.
+- first boot also downloads the `sentence-transformers/all-MiniLM-L6-v2` embedding model from Hugging Face (around 30 files in the laptop report). `(unhealthy)` for a few minutes can be normal during this download; on a slow connection it can take longer.
+- Ollama model downloads are additional. the installer does not pull them for you.
+
+check progress rather than rebuilding repeatedly:
+
+```bash
+sudo docker compose ps
+sudo docker compose logs --tail=100 openwebui
+curl -sS -m 5 http://localhost:3000/health
+```
+
+use your configured port if different. a 200 response means the health endpoint is ready; it does not prove the model connection works. persistent download errors or an unhealthy state after downloads finish need investigation.
+
+## troubleshooting
+
+### image pull times out
+
+retry the pinned image separately, then rerun the installer:
+
+```bash
+until sudo docker pull ghcr.io/open-webui/open-webui:v0.11.4; do sleep 5; done
+./install.sh
+```
+
+this manual loop keeps retrying until success; Ctrl-C stops it. layers already downloaded are reused. optionally merge `"max-concurrent-downloads": 1` into `/etc/docker/daemon.json` as valid JSON, preserving existing settings, then `sudo systemctl restart docker`. this may help weak links but was not confirmed in the laptop test; restarting Docker can interrupt other containers.
+
+### pacman 404s or invalid signatures
+
+an out-of-sync CachyOS mirror/database caused these in the reported install:
+
+```bash
+sudo cachyos-rate-mirrors
+sudo pacman -Syu
+sudo pacman -S ollama ollama-vulkan
+```
+
+use a full upgrade, not `pacman -Sy` followed by individual packages. on other Arch systems, refresh mirrors using that distribution's tooling. if signature errors persist after synchronization, investigate the keyring/package error; do not disable signature verification.
+
+### no models in the den
+
+```bash
+curl -sS -m 5 http://localhost:11434/api/tags
+./scripts/doctor.sh
+```
+
+if the host passes but the container request times out, check the listener and firewall section above. the doctor uses Python `urllib` inside the container with a five-second timeout, so it works without curl and reports failures. when using curl yourself, use `-sS -m 5`; `-s` alone hides useful errors. if connectivity passes, verify and save the Admin Connections URL and check model access for your account.
+
+### Docker permission denied
+
+use `sudo docker compose ...` for manual Docker commands when your user cannot access the socket. the installer and doctor handle this through sudo; do not run the whole installer or doctor as root, since Neco belongs to your user session. optionally add your account to the `docker` group and log out/in; that group grants root-equivalent Docker access.
+
+### buildx plugin not found
+
+in the laptop test this was a warning and the build still succeeded. if Compose actually fails the build, install your distribution's Docker Buildx plugin and retry; a failed build is not something to ignore.
+
+### systemctl looks frozen
+
+it is probably a pager. press `q`. use `--no-pager`, as in `systemctl --no-pager show ollama -p Environment`, or run `export SYSTEMD_PAGER=` in a Bash session.
+
+### neco disappears at logout or sleep
+
+`./scripts/start-neco.sh` already enables the user service. `loginctl enable-linger "$USER"` keeps the user service manager around after logout and starts it at boot. suspend/sleep still pauses Neco's timers; linger cannot keep a sleeping laptop awake.
+
+## starting on boot
+
+after the account, model, token, and one-shot test work, run these as your normal login user:
+
+```bash
+sudo systemctl enable --now docker ollama
+loginctl enable-linger "$USER"
+./scripts/start-neco.sh
+./scripts/doctor.sh
+```
+
+Compose uses `restart: unless-stopped`. a container you deliberately stopped stays stopped; start it again with `sudo docker compose up -d`.
+
+verify, and repeat these checks after your next reboot:
+
+```bash
+systemctl --no-pager is-enabled docker ollama
+systemctl --no-pager is-active docker ollama
+systemctl --user --no-pager is-enabled echo-local-ai-neco.service
+systemctl --user --no-pager is-active echo-local-ai-neco.service
+loginctl --no-pager show-user "$USER" -p Linger
+sudo docker compose ps
+./scripts/doctor.sh
+```
+
+the doctor is read-only and exits nonzero if a required check fails. token presence is checked without printing it; `./scripts/test-neco.sh` is the separate live authentication/generation test.
+
+### what has actually been verified
+
+the owner reported the Den and Neco working on a CachyOS laptop using `qwen2.5:0.5b` after the ufw fix. that is the real-machine install evidence. the runtime wrapper imports `neco_monologue.py`; both are needed, and the service starts `neco/runtime.py`.
+
+GPU/Vulkan use, reboot survival, Debian/Ubuntu installation, firewalld rules, the 3B models, and this revised install on a BC-250 still need real-machine verification. no amount of README confidence counts as a reboot.
 
 ---
 

@@ -37,7 +37,7 @@ install_host_deps() {
     esac
 
     if [[ "$family" == *"arch"* ]]; then
-        sudo pacman -S --needed --noconfirm docker docker-compose python
+        sudo pacman -Syu --needed docker docker-compose python
     elif [[ "$family" == *"ubuntu"* ]]; then
         sudo apt-get update
         sudo apt-get install -y docker.io docker-compose-v2 python3 python3-venv
@@ -68,7 +68,9 @@ if [[ ! -d "/lib/modules/$RUNNING_KERNEL" ]]; then
     die "The kernel was probably upgraded while this system was still running. Reboot, then rerun ./install.sh."
 fi
 
-[[ -f neco/neco_monologue.py ]] || die "Missing Neco."
+[[ -f neco/runtime.py ]] || die "Missing Neco entry point: neco/runtime.py."
+[[ -f neco/neco_monologue.py ]] || die "Missing Neco module: neco/neco_monologue.py."
+[[ -f neco/requirements.txt ]] || die "Missing neco/requirements.txt."
 [[ -f openwebui/overlay/index.html ]] || die "Missing Den UI."
 
 # Docker's daemon may exist but not be running yet.
@@ -88,6 +90,9 @@ if ! sudo systemctl is-active --quiet docker; then
         die "Docker daemon failed to start. The log above contains the real cause."
     fi
 fi
+
+# Enable boot startup even when Docker was already running.
+sudo systemctl enable docker
 
 # Use Docker directly when the current user already has permission.
 # Otherwise use sudo for this installation instead of forcing a logout/login.
@@ -154,6 +159,24 @@ python3 -m venv neco/.venv
 neco/.venv/bin/python -m pip install --upgrade pip
 neco/.venv/bin/pip install -r neco/requirements.txt
 
+say "[i] data warning: the Open WebUI base image is several GB."
+say "[i] first boot also downloads an embedding model; Ollama models are separate."
+say "[i] on metered data, press Ctrl-C now and rerun later; completed image layers are kept."
+# Read the pinned image from the Dockerfile so retries follow future version bumps.
+BASE_IMAGE="$(awk 'toupper($1) == "FROM" {print $2; exit}' openwebui/Dockerfile)"
+[[ -n "$BASE_IMAGE" ]] || die "No base image found in openwebui/Dockerfile."
+for attempt in 1 2 3; do
+    say "[+] pulling $BASE_IMAGE (attempt $attempt/3)"
+    if "${DOCKER[@]}" pull "$BASE_IMAGE"; then
+        break
+    fi
+    if [[ "$attempt" == 3 ]]; then
+        die "Base image pull failed after 3 attempts. Rerun ./install.sh on a stable connection; completed layers are cached. See README troubleshooting."
+    fi
+    say "[i] pull failed; retrying in 5 seconds"
+    sleep 5
+done
+
 say "[+] building the Den"
 compose up -d --build
 
@@ -194,7 +217,7 @@ PY
 
 echo
 echo "========================================"
-echo " the Den is up"
+echo " the Den container has started"
 echo "========================================"
 echo
 echo "open:"
@@ -202,10 +225,16 @@ echo "  http://localhost:$PORT"
 echo
 echo "then:"
 echo "  1. create your Open WebUI account"
-echo "  2. configure a model and verify normal chat works"
+echo "  2. set up Ollama (README: model backend), then verify normal chat works"
+echo "     Admin Settings > Connections > Ollama: http://host.docker.internal:11434"
+echo "     pull your model and match NECO_MODEL in .env to ollama list"
 echo "  3. create an Open WebUI API key"
 echo "  4. ./scripts/set-token.sh"
 echo "  5. ./scripts/test-neco.sh"
-echo "  6. ./scripts/start-neco.sh"
+echo "  6. loginctl enable-linger \$USER"
+echo "  7. ./scripts/start-neco.sh"
+echo "  8. ./scripts/doctor.sh"
 echo
+echo "First boot can be unhealthy while the embedding model downloads."
+echo "If Ollama works on the host but times out in Docker, see README firewall notes."
 echo "Neco has not been started yet."

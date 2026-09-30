@@ -5,12 +5,13 @@ services:
     container_name: echo-local-ai-webui
     restart: unless-stopped
     ports:
-      - "${OPENWEBUI_PORT:-3000}:8080"
+      - "${OPENWEBUI_BIND:-127.0.0.1}:${OPENWEBUI_PORT:-3000}:8080"
     volumes:
       - echo-local-ai-webui-data:/app/backend/data
     environment:
       WEBUI_SECRET_KEY: "${WEBUI_SECRET_KEY}"
       ENABLE_API_KEYS: "true"
+      OLLAMA_BASE_URL: "http://host.docker.internal:11434"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
