@@ -518,6 +518,28 @@ the repo intentionally does **not** ship my local music file.
 
 drop your own local/redistributable MP3 there before rebuilding if you want the radio control to have something to play.
 
+### getting the radio playing
+
+from the repo directory, install an MP3 you already have:
+
+```bash
+./scripts/set-music.sh "/full/path/to/your-song.mp3"
+```
+
+this copies the file into the ignored music path and rebuilds/recreates the Den container. it does not add the song to Git. if the file is already there, you can run the same command with `openwebui/overlay/static/den-music.mp3` as its argument.
+
+the image now copies overlay assets into Open WebUI's backend static directory too: `/static` is served from there, not from the frontend build directory. older images could contain the song in the wrong place.
+
+after rebuilding, refresh the Den (Ctrl+Shift+R) and click **DEN MUSIC**. browsers may block playback until a click. **DEN MUSIC UNAVAILABLE** means the audio failed to load or decode; hover over it for the recovery command.
+
+check the file is being served (replace the port if you changed it):
+
+```bash
+curl -sS -I -m 5 http://localhost:3000/static/den-music.mp3
+```
+
+expect `200` with an audio content type. a `404` means the file is absent from the running image; an HTML response is not a song, despite Neco's opinions about markup. the repository does not include the owner's original soundtrack, so a fresh clone needs your own MP3.
+
 ---
 
 ## this is an experiment

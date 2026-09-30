@@ -1821,12 +1821,15 @@ html.dark :is(h1,h2,h3) {
     track.volume = 0.5;
     track.preload = 'auto';
     let wanted = true;
+    let audioFailed = false;
 
     const update = () => {
-      button.textContent = track.paused ? 'DEN MUSIC OFF' : 'DEN MUSIC ON';
+      button.textContent = audioFailed ? 'DEN MUSIC UNAVAILABLE' :
+        (track.paused ? 'DEN MUSIC OFF' : 'DEN MUSIC ON');
       button.setAttribute('aria-pressed', String(!track.paused));
       button.setAttribute('aria-label',
-        track.paused ? 'Play Den music' : 'Pause Den music');
+        audioFailed ? 'Music unavailable. Add your MP3 with scripts/set-music.sh, then refresh.' :
+        (track.paused ? 'Play Den music' : 'Pause Den music'));
     };
 
     const play = () => {
@@ -1835,9 +1838,12 @@ html.dark :is(h1,h2,h3) {
         if (!wanted) track.pause();
         button.title = 'Click to turn music off';
         update();
-      }).catch(() => {
+      }).catch(error => {
+        if (audioFailed) return;
         update();
-        button.title = 'Click to start music; browser blocked autoplay or audio failed';
+        button.title = error.name === 'NotAllowedError'
+          ? 'Click to start music; your browser requires a user gesture'
+          : 'Audio could not play. Check that your file is a supported MP3.';
       });
     };
 
@@ -1852,15 +1858,16 @@ html.dark :is(h1,h2,h3) {
     });
 
     const unlock = event => {
-      if (!panel.contains(event.target) && wanted && track.paused) play();
+      if (!audioFailed && !panel.contains(event.target) && wanted && track.paused) play();
     };
     document.addEventListener('click', unlock);
     document.addEventListener('keydown', unlock);
     track.addEventListener('playing', update);
     track.addEventListener('pause', update);
     track.addEventListener('error', () => {
+      audioFailed = true;
       update();
-      button.title = 'Soundtrack failed to load: /static/den-music.mp3';
+      button.title = 'Music missing or unreadable. Run ./scripts/set-music.sh /path/to/song.mp3, then refresh.';
     });
 
     const refreshImages = () => {
