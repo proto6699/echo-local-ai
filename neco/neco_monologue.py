@@ -33,7 +33,6 @@ FRAGMENTS = [
     "I forgot what I was waiting for.",
 ]
 
-
 THOUGHT_DIRECTIONS = [
     "Let your thought be completely mundane.",
     "Wonder about something unrelated to the computer.",
@@ -100,14 +99,16 @@ def get_uptime_hours():
 
 def check_net():
     try:
-        r = subprocess.run(["ping", "-c", "1", "-W", "2", "1.1.1.1"],
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        r = subprocess.run(
+            ["ping", "-c", "1", "-W", "2", "1.1.1.1"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         return r.returncode == 0
     except Exception:
         return True
 
 def reactive_line():
-    """Check real system state; return a canned line if something notable happened, else None."""
     state = load_state()
     hour = datetime.now().hour
     net_ok = check_net()
@@ -121,10 +122,16 @@ def reactive_line():
     elif not state.get("net_ok", True) and net_ok:
         line = random.choice(["There you are.", "Oh good, you're back."])
     elif temp and temp > 75:
-        line = random.choice(["Something's thinking very hard in here.", "It's getting warm in the Den."])
+        line = random.choice([
+            "Something's thinking very hard in here.",
+            "It's getting warm in the Den."
+        ])
     elif 3 <= hour <= 5 and random.random() < 0.4:
-        line = random.choice(["It's very late.", "Most of the network is quieter now.",
-                               "Echo should probably be asleep."])
+        line = random.choice([
+            "It's very late.",
+            "Most of the network is quieter now.",
+            "Echo should probably be asleep."
+        ])
     elif uptime:
         milestone = int(uptime // 12) * 12
         if milestone > 0 and milestone != state.get("last_uptime_milestone", 0):
@@ -157,36 +164,78 @@ TIER_HINTS = {
 def find_or_create_chat():
     r = requests.get(f"{BASE_URL}/api/v1/chats/", headers=H(), timeout=15)
     r.raise_for_status()
+
     for c in r.json():
         if c["title"] == CHAT_TITLE:
             return c["id"]
+
     aid = str(uuid.uuid4())
     ts = int(time.time())
-    msg = {"id": aid, "role": "assistant", "content": "", "parentId": None,
-           "childrenIds": [], "model": MODEL, "modelName": MODEL, "modelIdx": 0,
-           "done": False, "timestamp": ts}
-    payload = {"chat": {"title": CHAT_TITLE, "models": [MODEL], "messages": [msg],
-               "history": {"currentId": aid, "messages": {aid: msg}}}}
-    r = requests.post(f"{BASE_URL}/api/v1/chats/new", headers=H(), json=payload, timeout=15)
+
+    msg = {
+        "id": aid,
+        "role": "assistant",
+        "content": "",
+        "parentId": None,
+        "childrenIds": [],
+        "model": MODEL,
+        "modelName": MODEL,
+        "modelIdx": 0,
+        "done": False,
+        "timestamp": ts,
+    }
+
+    payload = {
+        "chat": {
+            "title": CHAT_TITLE,
+            "models": [MODEL],
+            "messages": [msg],
+            "history": {
+                "currentId": aid,
+                "messages": {aid: msg},
+            },
+        }
+    }
+
+    r = requests.post(
+        f"{BASE_URL}/api/v1/chats/new",
+        headers=H(),
+        json=payload,
+        timeout=15,
+    )
     r.raise_for_status()
+
     chat_id = r.json()["id"]
-    generate_reply(chat_id, aid, [], "mundane")
+    content = generate_reply(chat_id, aid, [], "mundane")
+    emit_chat_reload(chat_id, aid)
+
     return chat_id
 
 def fetch_chat(chat_id):
-    r = requests.get(f"{BASE_URL}/api/v1/chats/{chat_id}", headers=H(), timeout=15)
+    r = requests.get(
+        f"{BASE_URL}/api/v1/chats/{chat_id}",
+        headers=H(),
+        timeout=15,
+    )
     r.raise_for_status()
     return r.json()
 
 def walk_context(chat_data, tip_id, limit=MAX_CONTEXT_MESSAGES):
     msgs = chat_data["chat"]["history"]["messages"]
     chain, cur = [], tip_id
+
     while cur and cur in msgs and len(chain) < limit:
         m = msgs[cur]
         chain.append(m)
         cur = m.get("parentId")
+
     chain.reverse()
-    return [{"role": m["role"], "content": m["content"]} for m in chain if m.get("content")]
+
+    return [
+        {"role": m["role"], "content": m["content"]}
+        for m in chain
+        if m.get("content")
+    ]
 
 def generate_reply(chat_id, assistant_id, context, tier):
     direction = thought_direction()
@@ -202,143 +251,157 @@ def generate_reply(chat_id, assistant_id, context, tier):
     payload = {
         "chat_id": chat_id,
         "id": assistant_id,
-
         "messages": [
-            {
-                "role": "system",
-                "content": system_prompt
-            },
+            {"role": "system", "content": system_prompt},
             {
                 "role": "user",
                 "content": (
                     "A new idle moment has passed. "
                     "Say one completely fresh spontaneous thought now."
-                )
-            }
+                ),
+            },
         ],
-
         "model": MODEL,
-        "stream": True,
+        "stream": False,
         "max_tokens": 150,
-
         "background_tasks": {
             "title_generation": False,
             "tags_generation": False,
-            "follow_up_generation": False
+            "follow_up_generation": False,
         },
-
         "features": {
             "code_interpreter": False,
             "web_search": False,
             "image_generation": False,
-            "memory": False
+            "memory": False,
         },
-
-        "session_id": str(uuid.uuid4())
+        "session_id": str(uuid.uuid4()),
     }
 
-    full_content = ""
-
-    with requests.post(
+    r = requests.post(
         f"{BASE_URL}/api/chat/completions",
         headers=H(),
         json=payload,
-        stream=True,
-        timeout=180
-    ) as r:
+        timeout=180,
+    )
+    r.raise_for_status()
 
-        r.raise_for_status()
+    content = ""
+    try:
+        content = r.json()["choices"][0]["message"]["content"]
+    except Exception:
+        pass
 
-        for line in r.iter_lines(decode_unicode=True):
+    time.sleep(0.5)
 
-            if not line:
-                continue
+    chat_data = fetch_chat(chat_id)
+    saved_msg = (
+        chat_data["chat"]["history"]["messages"]
+        .get(assistant_id, {})
+    )
+    saved = saved_msg.get("content", "")
 
-            if not line.startswith("data: "):
-                continue
+    if content and not saved:
+        saved_msg["content"] = content
+        saved_msg["done"] = True
 
-            data_str = line[len("data: "):].strip()
+        patch = {
+            "chat": {
+                "history": {
+                    "currentId": assistant_id,
+                    "messages": {
+                        assistant_id: saved_msg
+                    },
+                }
+            }
+        }
 
-            if data_str == "[DONE]":
-                break
+        requests.post(
+            f"{BASE_URL}/api/v1/chats/{chat_id}",
+            headers=H(),
+            json=patch,
+            timeout=15,
+        ).raise_for_status()
 
-            try:
-                chunk = json.loads(data_str)
-            except json.JSONDecodeError:
-                continue
+        saved = content
 
-            delta = (
-                chunk
-                .get("choices", [{}])[0]
-                .get("delta", {})
-                .get("content")
-            )
-
-            if delta:
-                full_content += delta
-
-    return full_content
-
+    return content or saved or ""
 
 def emit_chat_reload(chat_id, message_id):
-    """Tell Open WebUI clients to reload this chat through its native socket event."""
     try:
         payload = {
             "type": "chat:reload",
-            "data": {}
+            "data": {},
         }
 
         r = requests.post(
             f"{BASE_URL}/api/v1/chats/{chat_id}/messages/{message_id}/event",
             headers=H(),
             json=payload,
-            timeout=15
+            timeout=15,
         )
-
         r.raise_for_status()
 
-        print(
-            f"[{datetime.now()}] "
-            f"Sent native chat:reload event"
-        )
-
+        print(f"[{datetime.now()}] Sent native chat:reload event")
         return True
 
     except Exception as e:
-        print(
-            f"[{datetime.now()}] "
-            f"chat:reload failed: {e}"
-        )
-
+        print(f"[{datetime.now()}] chat:reload failed: {e}")
         return False
 
-
 def write_message(chat_id, content):
-    """Directly write a canned/fragment line with no LLM call."""
     chat_data = fetch_chat(chat_id)
     tip_id = chat_data["chat"]["history"]["currentId"]
     tip_msg = chat_data["chat"]["history"]["messages"].get(tip_id, {})
+
     new_id = str(uuid.uuid4())
     ts = int(time.time())
-    patch = {"chat": {"history": {"currentId": new_id, "messages": {
-        tip_id: {"childrenIds": tip_msg.get("childrenIds", []) + [new_id]},
-        new_id: {"id": new_id, "role": "assistant", "content": content, "parentId": tip_id,
-                 "childrenIds": [], "model": MODEL, "modelName": MODEL, "modelIdx": 0,
-                 "done": True, "timestamp": ts}
-    }}}}
-    r = requests.post(f"{BASE_URL}/api/v1/chats/{chat_id}", headers=H(), json=patch, timeout=15)
-    r.raise_for_status()
-    emit_chat_reload(chat_id, new_id)
 
+    patch = {
+        "chat": {
+            "history": {
+                "currentId": new_id,
+                "messages": {
+                    tip_id: {
+                        "childrenIds": tip_msg.get("childrenIds", []) + [new_id]
+                    },
+                    new_id: {
+                        "id": new_id,
+                        "role": "assistant",
+                        "content": content,
+                        "parentId": tip_id,
+                        "childrenIds": [],
+                        "model": MODEL,
+                        "modelName": MODEL,
+                        "modelIdx": 0,
+                        "done": True,
+                        "timestamp": ts,
+                    },
+                },
+            }
+        }
+    }
+
+    r = requests.post(
+        f"{BASE_URL}/api/v1/chats/{chat_id}",
+        headers=H(),
+        json=patch,
+        timeout=15,
+    )
+    r.raise_for_status()
+
+    emit_chat_reload(chat_id, new_id)
 
 def post_idle_thought(chat_id):
     reactive = reactive_line()
+
     if reactive:
         write_message(chat_id, reactive)
         print(f"[{datetime.now()}] Neco (reactive): {reactive}")
         return
 
     tier = pick_tier()
+
     if tier == "fragment":
         line = random.choice(FRAGMENTS)
         write_message(chat_id, line)
@@ -349,32 +412,65 @@ def post_idle_thought(chat_id):
     tip_id = chat_data["chat"]["history"]["currentId"]
     context = walk_context(chat_data, tip_id)
     tip_msg = chat_data["chat"]["history"]["messages"].get(tip_id, {})
+
     new_id = str(uuid.uuid4())
     ts = int(time.time())
-    patch = {"chat": {"history": {"currentId": new_id, "messages": {
-        tip_id: {"childrenIds": tip_msg.get("childrenIds", []) + [new_id]},
-        new_id: {"id": new_id, "role": "assistant", "content": "", "parentId": tip_id,
-                 "childrenIds": [], "model": MODEL, "modelName": MODEL, "modelIdx": 0,
-                 "done": False, "timestamp": ts}
-    }}}}
-    requests.post(f"{BASE_URL}/api/v1/chats/{chat_id}", headers=H(), json=patch, timeout=15).raise_for_status()
+
+    patch = {
+        "chat": {
+            "history": {
+                "currentId": new_id,
+                "messages": {
+                    tip_id: {
+                        "childrenIds": tip_msg.get("childrenIds", []) + [new_id]
+                    },
+                    new_id: {
+                        "id": new_id,
+                        "role": "assistant",
+                        "content": "",
+                        "parentId": tip_id,
+                        "childrenIds": [],
+                        "model": MODEL,
+                        "modelName": MODEL,
+                        "modelIdx": 0,
+                        "done": False,
+                        "timestamp": ts,
+                    },
+                },
+            }
+        }
+    }
+
+    requests.post(
+        f"{BASE_URL}/api/v1/chats/{chat_id}",
+        headers=H(),
+        json=patch,
+        timeout=15,
+    ).raise_for_status()
+
     content = generate_reply(chat_id, new_id, context, tier)
     emit_chat_reload(chat_id, new_id)
-
 
     print(f"[{datetime.now()}] Neco ({tier}): {content[:100]}")
 
 def main_loop(test_mode=False):
     chat_id = find_or_create_chat()
-    print(f"Neco idle chat ready: '{CHAT_TITLE}' in http://127.0.0.1:3000")
+
+    print(
+        f"Neco idle chat ready: '{CHAT_TITLE}' in {BASE_URL}"
+    )
+
     while True:
         try:
             post_idle_thought(chat_id)
         except Exception as e:
             print(f"[{datetime.now()}] Error: {e}")
+
         if test_mode:
             break
+
         delay = random.uniform(MIN_INTERVAL, MAX_INTERVAL)
+
         print(f"Sleeping {delay/3600:.2f} hours...")
         time.sleep(delay)
 
