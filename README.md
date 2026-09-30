@@ -138,6 +138,8 @@ the original machine is a repurposed AMD BC-250 running CachyOS, but nothing abo
 - systemd user services
 - a model that Open WebUI can talk to
 
+if Docker / Compose / Python venv support is missing, `./install.sh` can bootstrap those pieces automatically on Arch/CachyOS/EndeavourOS and Debian/Ubuntu.
+
 Neco talks to **Open WebUI**, not directly to Ollama/LM Studio/llama.cpp.
 
 ---
