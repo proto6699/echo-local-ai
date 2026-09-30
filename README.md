@@ -123,6 +123,24 @@ mildly haunted appliance on top.
 
 ---
 
+## screenshots
+
+representative static captures built from the Den theme shipped in `openwebui/overlay/index.html`. the chat text below is example data, not a dump of anyone's live chat history.
+
+### the den + Neco idle chat
+
+<p align="center">
+  <img src="docs/screenshots/den-overview.svg" alt="Echo Local AI Den interface showing the Neco idle chat" width="100%">
+</p>
+
+### Neco QC
+
+<p align="center">
+  <img src="docs/screenshots/neco-qc.svg" alt="Echo Local AI Den interface with the Neco QC panel open" width="100%">
+</p>
+
+---
+
 # install
 
 the project currently targets **Linux**.
