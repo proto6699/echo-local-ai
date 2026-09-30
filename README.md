@@ -510,6 +510,8 @@ GPU/Vulkan use, reboot survival, Debian/Ubuntu installation, firewalld rules, th
 
 the interactive system prompt lives in [`neco/persona.md`](neco/persona.md). it reconstructs the agreed character: escaped lab subject, dry voice, slightly suspicious, living in the Den. the backstory is fiction; actual capabilities still come from the software.
 
+the expanded persona covers answer length, long rants on request, casual lowercase writing, disagreement, humor, and technical troubleshooting. it is intended for a more capable instruction-following model. the 0.5B smoke-test model followed a tiny identity prompt but failed the earlier full persona in the owner's direct Ollama test; more detail is not a fix for that limitation. the expanded version has not yet been tested on the planned larger model.
+
 `./scripts/set-token.sh` now installs and verifies that prompt automatically using your Open WebUI admin API key. it applies to the model named by `NECO_MODEL` in `.env`, so you do not need to create a second preset or paste anything. new model customization entries are named **Neco**; existing names and other settings are preserved. the account Personalization field can stay empty because the prompt belongs to the model.
 
 refresh the Den and start a new chat with that model after setup. for an existing installation with a saved token, run:
