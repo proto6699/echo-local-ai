@@ -58,6 +58,16 @@ command -v docker >/dev/null 2>&1 || die "Docker is still unavailable."
 command -v python3 >/dev/null 2>&1 || die "Python 3 is still unavailable."
 command -v systemctl >/dev/null 2>&1 || die "systemd/systemctl is required."
 
+RUNNING_KERNEL="$(uname -r)"
+if [[ ! -d "/lib/modules/$RUNNING_KERNEL" ]]; then
+    echo
+    echo "kernel/module mismatch detected."
+    echo "running kernel:  $RUNNING_KERNEL"
+    echo "modules for that kernel are missing from /lib/modules."
+    echo
+    die "The kernel was probably upgraded while this system was still running. Reboot, then rerun ./install.sh."
+fi
+
 [[ -f neco/neco_monologue.py ]] || die "Missing Neco."
 [[ -f openwebui/overlay/index.html ]] || die "Missing Den UI."
 
