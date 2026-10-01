@@ -151,24 +151,14 @@ EOF
 systemctl --user daemon-reload
 systemctl --user stop echo-local-ai-v2-neco.service 2>/dev/null || true
 
-PORT="$(python3 - <<'PY'
-from pathlib import Path
-import shlex
-port='3000'
-for line in Path('.env').read_text().splitlines():
-    if line.startswith('OPENWEBUI_PORT='):
-        parts=shlex.split(line.split('=',1)[1], comments=True)
-        if parts: port=parts[0]
-print(port)
-PY
-)"
+BASE_URL="$(python3 -c 'from neco.config import Settings; print(Settings.from_env().base_url)')"
 
 say '[+] waiting for the Den health endpoint'
 ready=false
 for _ in {1..90}; do
-  if python3 - "$PORT" <<'PY' >/dev/null 2>&1
+  if python3 - "$BASE_URL" <<'PY' >/dev/null 2>&1
 import sys, urllib.request
-with urllib.request.urlopen(f"http://127.0.0.1:{sys.argv[1]}/health", timeout=2) as r:
+with urllib.request.urlopen(sys.argv[1].rstrip("/") + "/health", timeout=2) as r:
     raise SystemExit(0 if r.status == 200 else 1)
 PY
   then ready=true; break; fi
@@ -176,7 +166,7 @@ PY
 done
 
 if [[ "$ready" == true ]]; then
-  say "[+] Den ready: http://localhost:$PORT"
+  say "[+] Den ready: $BASE_URL"
 else
   say '[!] Den is still starting. First boot may download an embedding model.'
   say '    Check: sudo docker compose logs --tail=100 openwebui'
@@ -186,7 +176,7 @@ echo
 echo '========================================'
 echo ' Echo Local AI v2 staged successfully'
 echo '========================================'
-echo "Open http://localhost:$PORT"
+echo "Open $BASE_URL"
 echo '1. Create the first Open WebUI account (admin).'
 echo '2. Connect/select a backend and verify NECO_MODEL can answer a normal chat.'
 echo '3. Create an API key in Settings > Account > API keys.'
