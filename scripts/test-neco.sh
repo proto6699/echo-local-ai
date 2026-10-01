@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-[[ -f "$ROOT/.env" ]] || { echo "Run ./install.sh first."; exit 1; }
-[[ -s "$ROOT/.runtime/neco_token" ]] || { echo "Run ./scripts/set-token.sh first."; exit 1; }
-set -a
-# shellcheck disable=SC1091
-source "$ROOT/.env"
-set +a
-export NECO_TOKEN_FILE="$ROOT/.runtime/neco_token"
-export NECO_STATE_FILE="$ROOT/.runtime/neco_state.json"
 cd "$ROOT"
+[[ -f .env ]] || { echo 'Run ./install.sh first.' >&2; exit 1; }
+TOKEN_FILE="$(python3 -c 'from neco.config import Settings; print(Settings.from_env().token_file)')"
+[[ -s "$TOKEN_FILE" ]] || { echo 'Run ./scripts/set-token.sh first.' >&2; exit 1; }
 exec "$ROOT/neco/.venv/bin/python" -m neco.runtime --test
