@@ -1,95 +1,77 @@
-# setup notes
+# setup + troubleshooting notes — v2
 
-## install Ollama
+## no model appears in the Den
 
-Arch/CachyOS:
+The v2 daemon is backend-agnostic. Fix the model in Open WebUI first, then Neco.
 
-```bash
-sudo pacman -Syu ollama
-```
-
-For the Vulkan backend used in the original laptop test, install `ollama-vulkan` too. A package being installed does not prove the GPU is active: check `ollama ps` during generation. Pick the backend appropriate for your GPU.
-
-Debian/Ubuntu, using the [upstream installer](https://docs.ollama.com/linux):
+For Ollama, verify the host:
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y curl
-curl -fsSL https://ollama.com/install.sh -o /tmp/ollama-install.sh
-sh /tmp/ollama-install.sh
+OLLAMA_HOST=127.0.0.1:11434 ollama list
+curl -sS -m 5 http://127.0.0.1:11434/api/tags
 ```
 
-Then run `./scripts/setup-ollama.sh` from the repo. It reads `NECO_MODEL` from `.env`, writes a dedicated systemd drop-in, restarts Ollama, waits for readiness, and pulls the selected model. It does not overwrite your existing `override.conf`. Review other drop-ins if they override `OLLAMA_HOST`.
+Open WebUI should point to:
 
-The service binds to all interfaces so Docker can reach it. Restrict the unauthenticated port 11434 to trusted sources using your firewall. The Den itself binds only to localhost by default; `OPENWEBUI_BIND=0.0.0.0` deliberately enables LAN listening.
-
-## no models in the Den
-
-In **Admin Settings → Connections → Ollama**, enable the API and verify/save `http://host.docker.internal:11434`. Compose supplies this URL for new installations; existing database settings may override it.
-
-```bash
-curl -sS -m 5 http://localhost:11434/api/tags
-./scripts/doctor.sh
+```text
+http://host.docker.internal:11434
 ```
 
-If the host works but the container times out, inspect its subnet:
+For LM Studio / llama.cpp / vLLM / another OpenAI-compatible source, configure it in **Open WebUI → Connections** and verify a normal chat. Then set `NECO_MODEL` to the exact model ID Open WebUI exposes.
 
-```bash
-sudo docker inspect echo-local-ai-webui --format '{{range $name, $net := .NetworkSettings.Networks}}{{$name}}{{"\n"}}{{end}}'
-# Substitute the printed network name:
-sudo docker network inspect NETWORK_NAME --format '{{range .IPAM.Config}}{{.Subnet}}{{"\n"}}{{end}}'
-```
+## Ollama + Docker security
 
-With active ufw, substitute that subnet below (the example is a common Docker subnet, not a universal value):
+`scripts/setup-ollama.sh` binds Ollama to `0.0.0.0:11434` because a bridged Docker container cannot reach a host service bound only to host loopback. Ollama's local API is not intended to be exposed casually.
 
-```bash
-sudo ufw allow from 172.18.0.0/16 to any port 11434 proto tcp
-sudo ufw reload
-```
+Keep TCP **11434** blocked from untrusted LAN/WAN clients. The Den itself stays on `127.0.0.1` unless you deliberately change `OPENWEBUI_BIND`.
 
-For firewalld, use a port-scoped rich rule in the zone handling this traffic; do not trust all ports unnecessarily. This alternative is untested here:
+## first boot looks unhealthy
 
-```bash
-sudo firewall-cmd --get-active-zones
-sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="172.18.0.0/16" port port="11434" protocol="tcp" accept'
-sudo firewall-cmd --reload
-```
-
-Replace the zone and subnet with your actual values.
-
-## downloads and first boot
-
-The installer retries the base-image pull three times. Completed layers are cached; rerun `./install.sh` after a timeout. For persistent trouble, try `sudo docker pull ghcr.io/open-webui/open-webui:v0.11.4` separately.
-
-First boot downloads the `sentence-transformers/all-MiniLM-L6-v2` embedding model. A temporarily unhealthy container can be normal; persistent errors need investigation:
+Open WebUI may download an embedding model on first boot. Check:
 
 ```bash
 sudo docker compose logs --tail=100 openwebui
 curl -sS -m 5 http://localhost:3000/health
 ```
 
-Use your configured port if different. A healthy endpoint does not prove model generation works.
+The v2 installer waits for health for roughly three minutes, then prints a warning instead of pretending startup succeeded.
 
-## other common failures
+## API key rejected
 
-- **Docker permission denied:** use `sudo docker compose ...`; do not run the whole installer as root.
-- **CachyOS package 404/signature errors:** refresh mirrors with `sudo cachyos-rate-mirrors`, then do a full `sudo pacman -Syu`. Do not disable signature checks.
-- **Buildx warning:** ignorable only if the build succeeds. If it fails, install your distribution's Buildx plugin.
-- **Invalid API key:** create a key for the admin account and rerun `./scripts/set-token.sh`. Model setup needs model read/create/update access. Never paste the key into an issue.
-- **Wrong model:** `NECO_MODEL` must match `ollama list` and be accessible to the key's Open WebUI account. Pulling the repo does not migrate an existing `.env`.
-- **Generic personality:** start a new chat after applying the prompt. Saving the system prompt verifies storage, not instruction-following quality. A tiny model may fail a long prompt.
-- **Slow replies:** check `ollama ps` while generating and `journalctl -u ollama --no-pager -n 50`. Model size, CPU/GPU placement, prompt length, and memory pressure all matter. Do not assume a larger model will be faster.
-- **Neco stops after logout:** `loginctl enable-linger "$USER"`, then `./scripts/start-neco.sh`. Suspend still pauses execution.
-- **Music/icon/font missing:** rebuild, then hard-refresh. The files are bundled. For the avatar, rerun `python3 scripts/setup-persona.py`.
+Create a fresh key from the admin account, then:
 
-## alternative backends and customization
+```bash
+bash ./scripts/set-token.sh
+python3 scripts/setup-persona.py
+```
 
-LM Studio or llama.cpp can be connected manually as an OpenAI-compatible provider in Open WebUI. Skip `setup-ollama.sh`, set `NECO_MODEL` to the ID exposed by that provider, and verify normal chat before finishing setup. `doctor.sh` currently assumes local Ollama, so its backend checks will fail for alternatives.
+The daemon does not retry 401/403 responses because a bad credential will not heal with backoff.
 
-`finish-setup.sh` applies the persona/avatar, runs a live one-message test, enables linger, starts the daemon, and diagnoses it. It stops on failure rather than announcing success; fix the reported step and rerun. A test may add a message on each run.
+## Open WebUI is temporarily down
 
-The music replacement helper is `./scripts/set-music.sh /path/to/song.mp3`. The bundled track is tracked in Git; a local replacement appears as a modification.
+The v2 client retries connection errors, timeouts, HTTP 429, and 5xx responses using bounded exponential backoff. After the retry budget is exhausted, the daemon logs one actionable error and waits `NECO_ERROR_INTERVAL` before trying again.
 
-## verification scope
+## daemon won't stop quickly
 
-The owner confirmed the CachyOS laptop could chat using the tiny Qwen test model and save its Neco configuration. The new default's full persona quality and speed, clean-machine setup helpers, GPU acceleration, firewalld, Debian/Ubuntu, and reboot survival still need real-machine verification. Automated checks do not substitute for those tests.
+Generation streams by default. SIGINT/SIGTERM sets the runtime cancellation event and closes the active HTTP response. Check that `NECO_STREAM=true` and inspect:
+
+```bash
+journalctl --user -u echo-local-ai-v2-neco.service -n 100 --no-pager
+```
+
+## service survives browser close but not suspend
+
+Expected. The systemd user service keeps running with the browser closed. Suspending the machine suspends the process too.
+
+```bash
+loginctl enable-linger "$USER"
+bash ./scripts/start-neco.sh
+```
+
+## Docker permission denied
+
+Use `sudo docker compose ...` for manual checks, or add your user to the Docker group and log out/in. Do **not** run the whole project installer as root.
+
+## upstream Open WebUI breaks idle chat mutation
+
+The saved-chat internals are the least stable integration point. v2 isolates them in `neco/chat.py`. If an Open WebUI upgrade changes those private endpoints/data shapes, start there instead of changing the generation/runtime code.

@@ -1,99 +1,57 @@
-# Full installation walkthrough
+# full installation walkthrough — v2
 
 [Back to the Den](../README.md) · [Troubleshooting](setup.md)
 
-## install
+Run scripts as your normal user. They ask for `sudo` only where the host service/package manager needs it.
 
-Linux with systemd. The installer can add Docker, Compose, and Python on Arch/CachyOS or Debian/Ubuntu. **Ollama must be installed separately**; Compose starts the Den, not Ollama.
-
-First download: several GB for Open WebUI, about **1.3 GB for the default model**, plus an embedding model on first boot.
-
-Run each step as your normal user, and wait for it to finish before continuing. The scripts ask for sudo when needed. They are Bash scripts; `bash script-name` also works when your terminal uses fish. Do not run the whole installer with sudo.
-
-### 1. Download the repo
+## 1. clone
 
 ```bash
-git clone https://github.com/proto6699/echo-local-ai.git
-cd echo-local-ai
+git clone https://github.com/proto6699/echo-local-ai-v2.git
+cd echo-local-ai-v2
 ```
 
-Already cloned it? Start with `cd ~/echo-local-ai`. Keep running the following commands from that folder.
+## 2. install
 
-### 2. Install and start Ollama
-
-On **Arch/CachyOS**:
+For the bundled Ollama path:
 
 ```bash
-sudo pacman -Syu ollama
-sudo systemctl enable --now ollama
+bash ./install.sh --ollama
 ```
 
-For GPU backend options or Debian/Ubuntu installation, see [setup notes](setup.md). Installing a GPU backend does not prove GPU acceleration is active.
-
-If a command fails, stop and fix the reported error before continuing.
-
-### 3. Install the Den and Neco dependencies
+For LM Studio, llama.cpp, vLLM, or another backend you plan to connect in Open WebUI:
 
 ```bash
 bash ./install.sh
 ```
 
-This creates `.env` if missing, generates the WebUI secret, creates Neco's Python environment, builds the Den, and registers Neco's user service. Existing `.env` settings are preserved.
+The installer prepares `.env`, creates Neco's Python venv, starts Docker/Open WebUI, waits for `/health`, and installs the `echo-local-ai-v2-neco.service` user unit. It does **not** start Neco until an API key exists.
 
-Wait for **“the Den container has started.”** A Buildx warning can be ignored if the build succeeds. Docker permission messages are handled by the installer using sudo.
+## 3. browser boundary
 
-### 4. Configure Ollama and download the model
+Open `http://localhost:3000` (or your configured port), create the first Open WebUI account, and verify a normal model reply.
 
-```bash
-bash ./scripts/setup-ollama.sh
+If you used `--ollama`, the normal Open WebUI Ollama URL is:
+
+```text
+http://host.docker.internal:11434
 ```
 
-This reads `NECO_MODEL` from `.env`, configures Ollama for Docker access, enables/restarts its service, and downloads the selected model. It binds Ollama to all interfaces; restrict port 11434 to trusted clients and Docker using your firewall. See [setup notes](setup.md).
+Create an API key under **Settings → Account → API keys**.
 
-Verify the local backend before activating Neco:
-
-```bash
-OLLAMA_HOST=127.0.0.1:11434 ollama list
-curl -sS -m 5 http://localhost:11434/api/tags
-```
-
-Both should list **`llama3.2:1b`** on a fresh install, or the model selected in your existing `.env`.
-
-### 5. Create your account and test a chat
-
-Open **http://localhost:3000**:
-
-1. Create your account; the first account is admin.
-2. Select **llama3.2:1b** (or your configured model), send `hey`, and wait for a reply.
-3. Create an API key under **Settings → Account → API keys**.
-
-First boot may take a few minutes while the embedding model downloads. If no model appears, go to **Admin Settings → Connections → Ollama**, enable the API, and save `http://host.docker.internal:11434`. Then refresh. If it still fails, follow [connection troubleshooting](setup.md).
-
-### 6. Apply Neco's persona and start her
+## 4. finish once
 
 ```bash
 bash ./scripts/finish-setup.sh
 ```
 
-Paste the API key into the terminal when asked; do not post it publicly. An existing saved key is reused.
+This saves the API key, applies Neco's persona/avatar/vitals filter, posts one test thought, enables linger, starts the daemon, and runs diagnostics.
 
-This applies Neco's personality and avatar, generates a test thought, enables startup after logout/reboot, and runs diagnostics. It stops if a step fails. Once the problem is fixed, rerun the same command.
-
-Refresh the Den and start a **new chat** with Neco (or the existing model name). Click **DEN MUSIC** for the bundled soundtrack. No manual prompt pasting, image uploads, or music copying.
-
-### 7. Check everything
+## 5. verify
 
 ```bash
 bash ./scripts/doctor.sh
+journalctl --user -u echo-local-ai-v2-neco.service -n 80 --no-pager
 ```
 
-If persona setup says **“NECO_MODEL is not available to this account”**, verify Ollama first:
-
-```bash
-sudo systemctl enable --now ollama
-bash ./scripts/setup-ollama.sh
-```
-
-Then verify a normal chat in the Den and rerun `bash ./scripts/finish-setup.sh`. If Ollama cannot start, inspect `sudo journalctl -u ollama --no-pager -n 80`. Do not delete/reclone the repo to fix a stopped service.
-
-For manual Docker checks, use `sudo docker compose ps` if your user cannot access Docker. [More troubleshooting →](setup.md)
+A healthy Den and a valid API key do not automatically prove the configured model works; `doctor.sh` also checks that `NECO_MODEL` is visible through Open WebUI.
