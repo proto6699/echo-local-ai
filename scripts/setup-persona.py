@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Apply the shipped persona to the configured base model through Open WebUI's API."""
+import base64
 import json
 from pathlib import Path
 import shlex
@@ -68,7 +69,13 @@ def main():
     if not existing:
         payload = dict(id=model, base_model_id=None, name='Neco', meta={}, params={}, is_active=True)
     payload['params'] = dict(payload.get('params') or {}, system=prompt)
-    payload['meta'] = dict(payload.get('meta') or {}, profile_image_url='/static/den-neco.png?v=3')
+    # OWUI rejects arbitrary relative profile URLs; embedded PNGs are supported.
+    step('Reading bundled Neco avatar')
+    image = (ROOT / 'openwebui/overlay/static/den-neco.png').read_bytes()
+    if not image.startswith(b'\x89PNG\r\n\x1a\n'):
+        raise SetupError('The bundled Neco avatar is not a PNG. Restore den-neco.png from the repo.')
+    avatar = 'data:image/png;base64,' + base64.b64encode(image).decode('ascii')
+    payload['meta'] = dict(payload.get('meta') or {}, profile_image_url=avatar)
     step('Saving personality and avatar')
     result = api('/api/v1/models/model/update' if existing else '/api/v1/models/create', payload)
     if not result:
