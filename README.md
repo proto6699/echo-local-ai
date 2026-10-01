@@ -28,6 +28,7 @@ Talk to her in your browser. Leave her alone and a small Python daemon occasiona
 - **The Den:** customized Open WebUI with CRT effects and bundled music.
 - **Neco:** a character prompt and avatar, applied during setup.
 - **Idle thoughts:** messages in **Neco — idle**, normally every 20–45 minutes.
+- **Experimental system vitals:** Neco can receive fresh read-only host telemetry when you ask about temperature, load, memory, uptime, or how she is doing.
 - **A local backend:** Ollama serves the model. No paid inference API required.
 
 The escaped-lab backstory is fiction. The process occupying your laptop is unfortunately quite real.
@@ -88,6 +89,35 @@ First boot can take a few minutes. If a step fails, fix it and rerun that step. 
 
 Closing the browser does not stop the daemon. Suspending the machine pauses it. She cannot outthink a closed laptop.
 
+## Experimental: system vitals
+
+Neco has a small read-only nervous system now. The host daemon samples a few machine stats every five seconds and writes them to `.runtime/system-vitals.json`. Open WebUI can only see that snapshot; it does **not** get privileged access to the host.
+
+When a chat message asks about things like temperature, CPU/GPU load, RAM/VRAM, uptime, system health, or simply `how are you?`, the **Neco System Vitals** filter adds the latest snapshot to that request. Neco can then answer from real measurements instead of guessing.
+
+Current sensors:
+
+- host uptime and 1/5/15-minute load average
+- RAM used / total
+- CPU temperature when Linux exposes a usable hwmon/thermal sensor
+- AMD GPU temperature, load, and VRAM when those sysfs counters are available
+
+Hardware support is intentionally best-effort. Missing sensors stay missing; Neco is told not to invent a value.
+
+See the raw host reading without involving the model:
+
+```bash
+python3 neco/system_vitals.py
+```
+
+The feature is installed automatically by `scripts/setup-persona.py`. The only container bridge is the read-only runtime snapshot:
+
+```text
+host Linux -> .runtime/system-vitals.json -> Open WebUI filter -> Neco context
+```
+
+No privileged container, no shell execution from chat, and no write controls are exposed. For now she can feel the fever; she cannot turn the thermostat.
+
 ## Small brain, modest rent
 
 The default is **`llama3.2:1b`** with the compact [lite persona](neco/persona-lite.md). It is a starting point for smaller machines, not a guarantee of great answers. Check `ollama ps` during generation to see CPU/GPU placement.
@@ -111,6 +141,7 @@ Update from the repo folder:
 git pull --ff-only origin main
 sudo docker compose up -d --build
 python3 scripts/setup-persona.py
+systemctl --user restart echo-local-ai-neco.service
 ```
 
 Hard-refresh afterward. Persona setup replaces the system prompt and avatar and disables built-in tools; other model settings are preserved.
