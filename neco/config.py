@@ -90,7 +90,7 @@ class Settings:
     stream: bool
 
     @classmethod
-    def from_env(cls, root: Path = ROOT) -> "Settings":
+    def from_env(cls, root: Path = ROOT) -> Settings:
         load_env_file(root / ".env")
         port = os.getenv("OPENWEBUI_PORT", "3000")
         base_url = os.getenv("OPENWEBUI_URL", f"http://127.0.0.1:{port}").rstrip("/")
