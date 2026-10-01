@@ -328,276 +328,18 @@ html.dark :is(pre,code) {
 </script>
 
 
-<style id="den-qc-css">
-#den-qc {
-  position: fixed;
-  top: 66px;
-  left: 12px;
-  z-index: 9996;
-  color: #dce8cb;
-  font: 16px "Pixelify Sans", monospace;
-}
-#den-qc summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 146px;
-  padding: 5px 9px;
-  list-style: none;
-  cursor: pointer;
-  background: #0a100bf5;
-  border: 1px solid #657b46;
-  box-shadow: 3px 3px 0 #000;
-}
-#den-qc summary::-webkit-details-marker { display: none; }
-#den-qc summary img {
-  width: 38px; height: 42px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 5px #8cff5a44);
-}
-#den-qc summary strong { display: block; color: #8cff5a; }
-#den-qc summary small {
-  display: block; color: #e8c547;
-  font-size: 10px; letter-spacing: .08em;
-}
-#den-qc summary:hover { border-color: #e8c547; }
-#den-qc summary:focus-visible,
-#den-qc button:focus-visible {
-  outline: 2px solid #e8c547;
-  outline-offset: 3px;
-}
-#den-qc .qc-sheet {
-  position: relative;
-  margin-top: 8px;
-  width: min(350px, calc(100vw - 24px));
-  padding: 18px;
-  background: #0c140dfc;
-  border: 1px solid #657b46;
-  border-top: 3px solid #e8c547;
-  box-shadow: 5px 5px 0 #000, 0 0 32px #8cff5a12;
-}
-#den-qc .qc-kicker {
-  color: #e8c547;
-  font-size: 11px;
-  letter-spacing: .12em;
-  padding-right: 26px;
-}
-#den-qc .qc-close {
-  position: absolute;
-  top: 8px; right: 10px;
-  background: none; border: 0;
-  color: #e8c547; font-size: 22px;
-  cursor: pointer;
-}
-#den-qc .qc-title {
-  margin: 12px 0;
-  color: #8cff5a;
-  font-size: 24px;
-  line-height: 1.1;
-}
-#den-qc .qc-copy { margin: 0; line-height: 1.55; min-height: 76px; }
-#den-qc .qc-seal {
-  display: inline-block;
-  margin: 18px 0;
-  padding: 5px 8px;
-  border: 2px solid #ff6656;
-  color: #ff6656;
-  font-size: 13px;
-  letter-spacing: .1em;
-  transform: rotate(-5deg);
-}
-#den-qc .qc-footer {
-  border-top: 1px dashed #46563c;
-  padding-top: 12px;
-  color: #9baa8d;
-  font-size: 12px;
-}
-#den-qc .qc-again {
-  display: block;
-  width: 100%;
-  margin-top: 12px;
-  padding: 9px;
-  background: #192519;
-  color: #e8c547;
-  border: 1px solid #657b46;
-  cursor: pointer;
-  font: inherit;
-}
-#den-qc .qc-again:hover { background: #263722; }
-#den-qc[open] .qc-seal { animation: qc-stamp .22s ease-out; }
-@keyframes qc-stamp {
-  from { opacity: 0; transform: scale(1.4) rotate(-12deg); }
-  to { opacity: 1; transform: scale(1) rotate(-5deg); }
-}
-@media (prefers-reduced-motion: reduce) {
-  #den-qc .qc-seal { animation: none !important; }
-}
-@media (max-width: 600px) {
-  #den-qc { left: 8px; top: 58px; }
-  #den-qc summary { width: 126px; padding: 4px 6px; gap: 5px; }
-  #den-qc summary img { width: 30px; height: 34px; }
-}
-</style>
-
-
-<style id="den-qc-layout">
-#den-radio {
-  top: 66px !important;
-  right: 12px !important;
-  bottom: auto !important;
-  left: auto !important;
-}
-#den-qc {
-  top: 66px !important;
-  right: 171px !important;
-  left: auto !important;
-}
-#den-qc .qc-sheet {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  left: auto;
-}
-@media (max-width: 600px) {
-  #den-radio {
-    top: 58px !important;
-    right: 8px !important;
-  }
-  #den-qc {
-    top: 58px !important;
-    right: 151px !important;
-  }
-  #den-qc summary {
-    width: 120px !important;
-  }
-}
-</style>
-
-
-<style id="den-qc-readable">
-/* The compact controls retain the pixel aesthetic. */
-#den-qc summary,
-#den-radio button {
-  font-family: "Pixelify Sans", ui-monospace, monospace !important;
-}
-
-/* Blessings use a readable typeface and generous spacing. */
-#den-qc .qc-sheet,
-#den-qc .qc-sheet * {
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif !important;
-  text-shadow: none !important;
-  letter-spacing: normal !important;
-}
-#den-qc .qc-sheet {
-  z-index: 10000 !important;
-  padding: 22px !important;
-  background: #0b140d !important;
-  color: #e6f1df !important;
-  border: 1px solid #8aa46e !important;
-  border-top: 4px solid #e8c547 !important;
-  box-shadow: 0 12px 36px #000d, 4px 4px 0 #000 !important;
-  border-radius: 3px !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-#den-qc .qc-kicker {
-  color: #e8c547 !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  line-height: 1.5 !important;
-  letter-spacing: .08em !important;
-  padding-right: 30px !important;
-}
-#den-qc .qc-title {
-  color: #a9ff75 !important;
-  font-size: 24px !important;
-  font-weight: 800 !important;
-  line-height: 1.2 !important;
-  margin: 16px 0 !important;
-}
-#den-qc .qc-copy {
-  color: #f0f5eb !important;
-  font-size: 17px !important;
-  font-weight: 500 !important;
-  line-height: 1.55 !important;
-  min-height: 0 !important;
-  margin: 0 0 14px !important;
-  overflow-wrap: anywhere;
-}
-#den-qc .qc-seal {
-  font-family: "Pixelify Sans", ui-monospace, monospace !important;
-  font-size: 15px !important;
-  line-height: 1.3 !important;
-  margin: 10px 0 18px !important;
-}
-#den-qc .qc-footer {
-  color: #bccdb4 !important;
-  font-size: 13px !important;
-  line-height: 1.55 !important;
-}
-#den-qc .qc-again {
-  min-height: 46px !important;
-  margin-top: 16px !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  color: #e8c547 !important;
-  background: #1a2b1b !important;
-}
-#den-qc .qc-close {
-  min-width: 36px !important;
-  min-height: 36px !important;
-  font-size: 28px !important;
-  line-height: 1 !important;
-}
-
-/* Desktop: card sits under the right-hand controls. */
-@media (min-width: 601px) {
-  #den-qc[open] .qc-sheet {
-    position: absolute !important;
-    top: calc(100% + 8px) !important;
-    right: -172px !important;
-    left: auto !important;
-    width: min(380px, calc(100vw - 24px)) !important;
-    max-height: min(620px, calc(100vh - 140px)) !important;
-  }
-}
-
-/* Phone: card opens as a full-width, scrollable panel. */
-@media (max-width: 600px) {
-  #den-qc[open] .qc-sheet {
-    position: fixed !important;
-    top: calc(env(safe-area-inset-top, 0px) + 110px) !important;
-    right: 8px !important;
-    left: 8px !important;
-    bottom: auto !important;
-    width: calc(100vw - 16px) !important;
-    max-width: none !important;
-    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 126px) !important;
-    padding: 20px !important;
-  }
-  #den-qc .qc-title {
-    font-size: 22px !important;
-  }
-  #den-qc .qc-copy {
-    font-size: 18px !important;
-    line-height: 1.5 !important;
-  }
-}
-</style>
-
-
 <!-- ECH0_DEN_CRT_LAYER_START -->
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link
-  href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-  rel="stylesheet"
->
+<link rel="preload" href="/static/fonts/ShareTechMono-Regular.ttf" as="font" type="font/ttf" crossorigin>
 
 <style id="ech0-den-crt-layer-style">
+@font-face {
+    font-family: "Share Tech Mono";
+    src: url("/static/fonts/ShareTechMono-Regular.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
 
 :root {
     --ech0-bg: #020603;
@@ -610,13 +352,7 @@ html.dark :is(pre,code) {
     --ech0-cyan: rgba(60, 220, 210, .20);
     --ech0-white-glow: rgba(180,255,185,.18);
 
-    --ech0-font:
-        "VT323",
-        "IBM Plex Mono",
-        "Px437 IBM VGA8",
-        "Perfect DOS VGA 437",
-        "Courier New",
-        monospace;
+    --ech0-font: "Share Tech Mono", "DejaVu Sans Mono", monospace;
 }
 
 
@@ -644,11 +380,36 @@ code,
 pre,
 small,
 strong,
-b {
+b,
+h1, h2, h3, h4, h5, h6,
+[contenteditable="true"] {
     font-family: var(--ech0-font) !important;
-    letter-spacing: .03em !important;
+    letter-spacing: .01em !important;
 }
 
+
+/* Keep reading text crisp; the CRT atmosphere remains in the surrounding layers. */
+.prose, .markdown, [contenteditable="true"], textarea {
+    font-size: 17px !important;
+    line-height: 1.6 !important;
+}
+.prose p, .prose li, .markdown p, .markdown li,
+[contenteditable="true"], textarea, pre, code {
+    text-shadow: none !important;
+}
+#den-radio {
+    top: 66px !important;
+    right: 12px !important;
+    bottom: auto !important;
+}
+@media (max-width: 700px) {
+    #den-radio, #den-radio button {
+        width: auto !important;
+        min-width: 120px !important;
+        max-width: calc(100vw - 16px) !important;
+    }
+    #den-radio button { font-size: 12px !important; }
+}
 
 /* monochrome DOS-ish vibe */
 body,
@@ -760,64 +521,6 @@ body.ech0-caret-off input,
 body.ech0-caret-off textarea,
 body.ech0-caret-off [contenteditable="true"] {
     caret-color: transparent !important;
-}
-
-
-/* ============================================================
-   UNIFORM NECO QC + DEN MUSIC
-   ============================================================ */
-
-.ech0-equal-toggle {
-    box-sizing: border-box !important;
-
-    width: 132px !important;
-    min-width: 132px !important;
-    max-width: 132px !important;
-
-    height: 36px !important;
-    min-height: 36px !important;
-    max-height: 36px !important;
-
-    padding: 0 12px !important;
-    margin: 0 !important;
-
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    gap: 7px !important;
-    line-height: 1 !important;
-    flex: 0 0 132px !important;
-
-    border: none !important;
-    outline: none !important;
-    border-radius: 0 !important;
-
-    font-family: var(--ech0-font) !important;
-    letter-spacing: .06em !important;
-    white-space: nowrap !important;
-
-    box-shadow: none !important;
-    background: rgba(3, 14, 7, .88) !important;
-    color: var(--ech0-green) !important;
-}
-
-.ech0-equal-toggle:hover {
-    background: rgba(65,255,95,.07) !important;
-    color: var(--ech0-hot) !important;
-    text-shadow: 0 0 7px rgba(120,255,140,.22) !important;
-}
-
-.ech0-equal-toggle > * {
-    box-sizing: border-box !important;
-}
-
-.ech0-equal-toggle svg {
-    flex: 0 0 auto !important;
-}
-
-.ech0-equal-toggle span {
-    white-space: nowrap !important;
 }
 
 
@@ -1034,87 +737,6 @@ body.ech0-j3 .ech0-crt-surface {
     window.__ECH0_DEN_CRT_LAYER__ = true;
 
 
-    function findControlByText(exactText) {
-        const wanted = exactText.trim().toLowerCase();
-
-        const candidates = [
-            ...document.querySelectorAll(
-                'button, [role="button"], label, a, div'
-            )
-        ];
-
-        const matches = candidates.filter(el => {
-            const value = (el.innerText || "")
-                .trim()
-                .replace(/\s+/g, " ")
-                .toLowerCase();
-
-            if (wanted === "den music") {
-                return value === "den music" ||
-                       value === "den music ▶" ||
-                       value === "den music on" ||
-                       value === "den music off";
-            }
-
-            return value === wanted;
-        });
-
-        if (!matches.length) return null;
-
-        matches.sort(
-            (a, b) =>
-                a.getBoundingClientRect().width -
-                b.getBoundingClientRect().width
-        );
-
-        let el = matches[0];
-
-        const interactive =
-            el.closest('button, [role="button"], label, a');
-
-        if (interactive) el = interactive;
-
-        return el;
-    }
-
-
-    function equalizeToggles() {
-        if (window.matchMedia("(max-width: 700px)").matches) return;
-        const neco =
-            document.getElementById("den-qc") ||
-            findControlByText("NECO QC");
-
-        const music =
-            document.getElementById("den-music") ||
-            findControlByText("DEN MUSIC");
-
-        if (!neco || !music) return;
-
-        for (const el of [neco, music]) {
-            el.classList.add("ech0-equal-toggle");
-
-            el.style.setProperty("width", "132px", "important");
-            el.style.setProperty("min-width", "132px", "important");
-            el.style.setProperty("max-width", "132px", "important");
-
-            el.style.setProperty("height", "36px", "important");
-            el.style.setProperty("min-height", "36px", "important");
-            el.style.setProperty("max-height", "36px", "important");
-
-            el.style.setProperty("padding", "0 12px", "important");
-
-            el.style.setProperty("box-sizing", "border-box", "important");
-            el.style.setProperty("display", "inline-flex", "important");
-            el.style.setProperty("align-items", "center", "important");
-            el.style.setProperty("justify-content", "center", "important");
-            el.style.setProperty("line-height", "1", "important");
-            el.style.setProperty("border", "none", "important");
-            el.style.setProperty("outline", "none", "important");
-            el.style.setProperty("box-shadow", "none", "important");
-        }
-    }
-
-
     function killDynamicRedBorders() {
         const elements = document.querySelectorAll("*");
 
@@ -1297,7 +919,6 @@ body.ech0-j3 .ech0-crt-surface {
 
 
     function applyFixes() {
-        equalizeToggles();
         killDynamicRedBorders();
         tagSurface();
     }
@@ -1530,9 +1151,9 @@ html.dark :is(h1,h2,h3) {
         bottom: auto !important;
         left: auto !important;
 
-        width: 78px !important;
-        min-width: 78px !important;
-        max-width: 78px !important;
+        width: auto !important;
+        min-width: 120px !important;
+        max-width: calc(100vw - 16px) !important;
 
         height: 28px !important;
         min-height: 28px !important;
@@ -1548,9 +1169,9 @@ html.dark :is(h1,h2,h3) {
     }
 
     #den-radio button {
-        width: 78px !important;
-        min-width: 78px !important;
-        max-width: 78px !important;
+        width: auto !important;
+        min-width: 120px !important;
+        max-width: calc(100vw - 16px) !important;
 
         height: 28px !important;
         min-height: 28px !important;
@@ -1561,118 +1182,12 @@ html.dark :is(h1,h2,h3) {
 
         display: block !important;
 
-        font-size: 9px !important;
+        font-size: 12px !important;
         line-height: 28px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
 
         transform: none !important;
-    }
-
-
-    #den-qc {
-        position: fixed !important;
-        top: 58px !important;
-        right: 90px !important;
-        bottom: auto !important;
-        left: auto !important;
-
-        width: 78px !important;
-        min-width: 78px !important;
-        max-width: 78px !important;
-
-        height: 28px !important;
-        min-height: 28px !important;
-        max-height: 28px !important;
-
-        padding: 0 !important;
-        margin: 0 !important;
-
-        display: block !important;
-        z-index: 10019 !important;
-    }
-
-    #den-qc > summary {
-        box-sizing: border-box !important;
-
-        width: 78px !important;
-        min-width: 78px !important;
-        max-width: 78px !important;
-
-        height: 28px !important;
-        min-height: 28px !important;
-        max-height: 28px !important;
-
-        padding: 2px 4px !important;
-        margin: 0 !important;
-
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: center !important;
-
-        gap: 3px !important;
-
-        font-size: 9px !important;
-        line-height: 1 !important;
-
-        overflow: hidden !important;
-        transform: none !important;
-    }
-
-    #den-qc > summary img {
-        width: 17px !important;
-        min-width: 17px !important;
-        max-width: 17px !important;
-
-        height: 20px !important;
-
-        object-fit: contain !important;
-        flex: 0 0 17px !important;
-    }
-
-    #den-qc > summary span {
-        width: auto !important;
-        min-width: 0 !important;
-    }
-
-    #den-qc > summary strong {
-        display: block !important;
-        font-size: 9px !important;
-        line-height: 1 !important;
-        white-space: nowrap !important;
-    }
-
-    #den-qc > summary small {
-        display: none !important;
-    }
-
-
-    /*
-     * Open blessing remains readable.
-     */
-
-    #den-qc[open] {
-        overflow: visible !important;
-    }
-
-    #den-qc[open] .qc-sheet {
-        position: fixed !important;
-
-        top: 96px !important;
-        right: 8px !important;
-        left: 8px !important;
-
-        width: auto !important;
-        max-width: none !important;
-        height: auto !important;
-
-        max-height: calc(100dvh - 112px) !important;
-
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-
-        z-index: 10030 !important;
     }
 
 
@@ -1915,96 +1430,6 @@ html.dark :is(h1,h2,h3) {
     play();
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, {once:true});
-  } else boot();
-})();
-</script>
-
-
-
-<script id="den-qc-js">
-(() => {
-  const boot = () => {
-    if (document.getElementById('den-qc')) return;
-
-    const blessings = [
-      "Neco blesses your prompt: may the model read the actual question before writing fourteen paragraphs about the question.",
-      "Neco prays your context window holds your ambitions, your CV, and at least one remaining brain cell.",
-      "Neco blesses your tokens. Please spend them on answers, not a council meeting about how to answer.",
-      "Neco has stamped your agent with one paw. It is now authorized to do the task instead of planning it forever.",
-      "Neco prays your API returns 200, your retries eventually stop, and your bill stays less dramatic than your prompt.",
-      "Neco blesses your memory database: may it remember your goals and forget the thing you said at 3 a.m.",
-      "Neco prays your job researcher finds real vacancies with working links and does not invent a hiring manager named John Drone.",
-      "Neco blesses your cache. May it stay warm while your BC-250 remains cool enough to be trusted indoors.",
-      "Neco has reviewed your agent's reasoning. The cat requests fewer sub-agents and more completed tasks.",
-      "Neco prays your hallucinations remain confined to the cat oracle, where they belong.",
-      "Neco blesses your next terminal command. Read it once before pressing Enter; the blessing has limits.",
-      "Neco grants +3 patience, +1 useful tool call, and immunity from the phrase 'as an AI language model' for one chat.",
-      "Neco prays the answer arrives before you decide to rebuild the entire backend in Rust.",
-      "Neco approves this conversation. No tokens were harmed in the making of this blessing."
-    ];
-    let previous = -1;
-    let count = 0;
-
-    const widget = document.createElement('details');
-    widget.id = 'den-qc';
-    widget.innerHTML = `
-      <summary aria-label="Open Neco quality control">
-        <img src="/static/den-neco.png" alt="Neco">
-        <span><strong>NECO QC</strong><small>REQUEST BLESSING</small></span>
-      </summary>
-      <section class="qc-sheet" aria-label="Token blessing">
-        <button class="qc-close" type="button" aria-label="Close blessing">×</button>
-        <div class="qc-kicker">THE DEN // NECO'S TOKEN BLESSINGS</div>
-        <div class="qc-title">NECO HAS SPOKEN.</div>
-        <p class="qc-copy" aria-live="polite"></p>
-        <div class="qc-seal">PURR REVIEW PASSED</div>
-        <div class="qc-footer">
-          QC authority: one cat.<br>
-          Actual API tokens spent: 0.
-          <span class="qc-count"></span>
-        </div>
-        <button class="qc-again" type="button">PET THE AUDITOR ↻</button>
-      </section>
-    `;
-
-    const bless = () => {
-      let i;
-      do { i = Math.floor(Math.random() * blessings.length); }
-      while (i === previous);
-      previous = i;
-      count++;
-      widget.querySelector('.qc-copy').textContent = blessings[i];
-      widget.querySelector('.qc-count').textContent =
-        ' Blessings issued this visit: ' + count + '.';
-      const stamp = widget.querySelector('.qc-seal');
-      stamp.style.animation = 'none';
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => { stamp.style.animation = ''; });
-      });
-    };
-
-    const close = () => {
-      widget.open = false;
-      widget.querySelector('summary').focus();
-    };
-    widget.addEventListener('toggle', () => {
-      if (widget.open) bless();
-    });
-    widget.querySelector('.qc-again').addEventListener('click', bless);
-    widget.querySelector('.qc-close').addEventListener('click', close);
-    widget.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        close();
-      }
-    });
-    document.addEventListener('click', e => {
-      if (widget.open && !widget.contains(e.target)) widget.open = false;
-    });
-    document.body.appendChild(widget);
-  };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot, {once:true});
   } else boot();

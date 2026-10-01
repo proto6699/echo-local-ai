@@ -52,7 +52,7 @@ she is **not conscious**. scheduling a language model with systemd does not summ
 
 ## the den
 
-Neco lives in **the Den**: Open WebUI wearing a CRT costume. scanlines, glow, static, jitter, terminal type, a radio, Neco controls.
+Neco lives in **the Den**: Open WebUI wearing a CRT costume. scanlines, glow, static, jitter, locally bundled Share Tech Mono terminal type, and a radio. the Neco QC widget has been removed.
 
 Open WebUI still does the real work underneath (auth, chat storage, API). the Den is what happens when CSS gets out of hand.
 

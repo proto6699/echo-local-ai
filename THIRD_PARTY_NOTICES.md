@@ -26,3 +26,10 @@ The repository intentionally does not ship the Den's local music file.
 Supplied by the repository owner for inclusion as the Den soundtrack.
 Audio is excluded from the MIT code license; rights remain with its respective rights holders.
 No separate audio redistribution license was provided with the uploaded file.
+
+## interface font
+
+Share Tech Mono by Carrois Type Design is bundled unchanged from
+https://github.com/google/fonts/tree/main/ofl/sharetechmono.
+Licensed under the SIL Open Font License 1.1; see
+`openwebui/overlay/static/fonts/OFL-ShareTechMono.txt`.
