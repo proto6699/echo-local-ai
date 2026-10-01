@@ -4,23 +4,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 [[ -f .env ]] || { echo 'Run ./install.sh first.' >&2; exit 1; }
-command -v ollama >/dev/null 2>&1 || { echo 'Ollama is missing. See docs/setup.md.' >&2; exit 1; }
+command -v ollama >/dev/null 2>&1 || {
+  echo 'Ollama is missing. Install it or configure another OpenAI-compatible backend in Open WebUI.' >&2
+  exit 1
+}
 
-MODEL="$(python3 - <<'PY'
-from pathlib import Path
-import shlex
-for line in Path('.env').read_text().splitlines():
-    if line.startswith('NECO_MODEL='):
-        parts = shlex.split(line.split('=', 1)[1], comments=True)
-        if parts and parts[0] and not parts[0].startswith('-'):
-            print(parts[0])
-            break
-else:
-    raise SystemExit('Set NECO_MODEL in .env first.')
-PY
-)"
-[[ -n "$MODEL" ]] || { echo 'NECO_MODEL is empty or invalid.' >&2; exit 1; }
-
+MODEL="$(python3 -c 'from neco.config import Settings; print(Settings.from_env().model)')"
 echo "Configuring host Ollama for the Docker bridge. Selected model: $MODEL"
 echo 'SECURITY: this binds Ollama to 0.0.0.0:11434 so Docker can reach it.'
 echo 'Keep TCP 11434 blocked from untrusted LAN/WAN clients with your firewall.'
