@@ -5,7 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 [[ -f .env && -x neco/.venv/bin/python ]] || { echo 'Run ./install.sh first.' >&2; exit 1; }
 
-if [[ -s .runtime/neco_token ]]; then
+TOKEN_FILE="$(python3 -c 'from neco.config import Settings; print(Settings.from_env().token_file)')"
+if [[ -s "$TOKEN_FILE" ]]; then
   echo '[+] using saved API key'
 else
   ./scripts/set-token.sh
