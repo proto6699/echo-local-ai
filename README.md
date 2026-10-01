@@ -8,7 +8,7 @@ Neco lives in the Den: a CRT-styled Open WebUI with a local model, DOS typograph
 
 Linux with systemd. bring Git and Ollama; the installer can add Docker, Compose, and Python on Arch/CachyOS or Debian/Ubuntu. [Ollama installation and troubleshooting →](docs/setup.md)
 
-first download: several GB for Open WebUI, about **2 GB for the default model**, plus an embedding model on first boot. use a decent connection.
+first download: several GB for Open WebUI, about **1.3 GB for the default model**, plus an embedding model on first boot. use a decent connection.
 
 ```bash
 git clone https://github.com/proto6699/echo-local-ai.git
@@ -20,7 +20,7 @@ cd echo-local-ai
 open **http://localhost:3000**:
 
 1. create your account; the first account is admin.
-2. select **llama3.2:3b** and send a message to check the connection.
+2. select **llama3.2:1b** and send a message to check the connection.
 3. create an API key under **Settings → Account → API keys**.
 
 then run:
@@ -37,14 +37,14 @@ first boot may take a few minutes. if models are missing or a command fails, [ch
 
 ## the model
 
-**`llama3.2:3b`** is the new-install default: a roughly [2 GB instruction-tuned model](https://ollama.com/library/llama3.2:3b). a practical starting point, not a guarantee of speed or character quality on every machine. the expanded persona still needs testing with it.
+**`llama3.2:1b`** is the new-install default: a roughly [1.3 GB instruction-tuned model](https://ollama.com/library/llama3.2:1b). a practical starting point, not a guarantee of speed or character quality on every machine. it uses the compact laptop persona by default.
 
 bigger does not mean faster. if responses crawl, run `ollama ps` while generating to see whether the model is on CPU or GPU. the old `qwen2.5:0.5b` was only a plumbing test; it failed the full persona in our direct Ollama test.
 
 existing `.env` files are preserved. to switch an older install to the new default:
 
 ```bash
-sed -i 's/^NECO_MODEL=.*/NECO_MODEL=llama3.2:3b/' .env
+sed -i 's/^NECO_MODEL=.*/NECO_MODEL=llama3.2:1b/' .env
 ./scripts/setup-ollama.sh
 ./scripts/finish-setup.sh
 ```
@@ -59,7 +59,7 @@ systemctl --user stop echo-local-ai-neco.service
 ./scripts/start-neco.sh
 ```
 
-settings live in `.env`; the interactive personality lives in [`neco/persona.md`](neco/persona.md). the daemon has its own short idle prompt. the self-aware backstory is fiction; the resident process is real.
+settings live in `.env`; the compact interactive personality lives in [`neco/persona-lite.md`](neco/persona-lite.md); set `NECO_PERSONA=full` for the detailed version on stronger hardware. the daemon has its own short idle prompt. the self-aware backstory is fiction; the resident process is real.
 
 ## update
 

@@ -25,7 +25,7 @@ def main():
     settings = {}
     for line in (ROOT / '.env').read_text().splitlines():
         key, sep, value = line.partition('=')
-        if sep and key.strip() in ('NECO_MODEL', 'OPENWEBUI_PORT', 'OPENWEBUI_URL', 'OWNER_NAME'):
+        if sep and key.strip() in ('NECO_MODEL', 'OPENWEBUI_PORT', 'OPENWEBUI_URL', 'OWNER_NAME', 'NECO_PERSONA'):
             words = shlex.split(value, comments=True)
             settings[key.strip()] = words[0] if words else ''
     model = settings.get('NECO_MODEL', '').strip()
@@ -36,10 +36,14 @@ def main():
     if not token:
         raise SetupError('Run ./scripts/set-token.sh with an admin API key first.')
     base = settings.get('OPENWEBUI_URL') or 'http://127.0.0.1:' + settings.get('OPENWEBUI_PORT', '3000')
-    step('Reading neco/persona.md')
-    prompt = (ROOT / 'neco/persona.md').read_text().replace('Echo', settings.get('OWNER_NAME') or 'Echo')
+    persona = settings.get('NECO_PERSONA', 'lite').strip().lower()
+    persona_file = ROOT / ('neco/persona-lite.md' if persona == 'lite' else 'neco/persona.md')
+    step('Reading ' + persona_file.name)
+    if persona not in ('lite', 'full'):
+        raise SetupError('NECO_PERSONA must be lite or full.')
+    prompt = persona_file.read_text().replace('Echo', settings.get('OWNER_NAME') or 'Echo')
     if not prompt.strip():
-        raise SetupError('neco/persona.md is empty.')
+        raise SetupError(persona_file.name + ' is empty.')
 
     def api(path, payload=None):
         request = urllib.request.Request(base.rstrip('/') + path,
@@ -86,7 +90,7 @@ def main():
         raise SetupError('Persona could not be verified after saving.')
     if saved.get('meta', {}).get('profile_image_url') != payload['meta']['profile_image_url']:
         raise SetupError('Neco avatar could not be verified after saving.')
-    print('Neco personality and avatar saved and verified for ' + model + '.')
+    print('Neco ' + persona + ' personality and avatar saved and verified for ' + model + '.')
     print('Refresh the Den and start a new chat with this model (new entries are named Neco).')
     print('Your account Personalization field can remain empty; the model now supplies the system prompt.')
 
