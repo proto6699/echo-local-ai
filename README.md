@@ -52,7 +52,7 @@ she is **not conscious**. scheduling a language model with systemd does not summ
 
 ## the den
 
-Neco lives in **the Den**: Open WebUI wearing a CRT costume. scanlines, glow, static, jitter, locally bundled Share Tech Mono terminal type, and a radio. the Neco QC widget has been removed.
+Neco lives in **the Den**: Open WebUI wearing a CRT costume. scanlines, glow, static, jitter, locally bundled VT323 pixel-terminal type, and a radio. the Neco QC widget has been removed.
 
 Open WebUI still does the real work underneath (auth, chat storage, API). the Den is what happens when CSS gets out of hand.
 
@@ -230,3 +230,7 @@ original Echo Local AI code is MIT-licensed unless a file says otherwise. the De
 ---
 
 **Echo Local AI** · local model. persistent gremlin. probably thinking about something useless.
+
+## den visuals
+
+the DOS-style VT323 font is bundled locally at a larger reading size. the cat photo is the browser-tab icon; the supplied Neco illustration is the model/chat avatar. after updating and rebuilding an existing installation, run `python3 scripts/setup-persona.py` to apply the model avatar, then hard-refresh the browser. the account/user avatar is separate.

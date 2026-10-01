@@ -6,25 +6,25 @@
 		visual, textual, symbolic identifiers, metadata, and surrounding UI.
 		Do not alter, remove, obscure, or replace it except as LICENSE permits:
 		https://docs.openwebui.com/license. -->
-		<link rel="icon" type="image/png" href="/static/favicon.png" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/static/den-favicon.png?v=3" crossorigin="use-credentials" />
 		<link
 			rel="icon"
 			type="image/png"
-			href="/static/favicon-96x96.png"
+			href="/static/den-favicon.png?v=3"
 			sizes="96x96"
 			crossorigin="use-credentials"
 		/>
 		<link
 			rel="icon"
-			type="image/svg+xml"
-			href="/static/favicon.svg"
+			type="image/png"
+			href="/static/den-favicon.png?v=3"
 			crossorigin="use-credentials"
 		/>
-		<link rel="shortcut icon" href="/static/favicon.ico" crossorigin="use-credentials" />
+		<link rel="shortcut icon" href="/static/den-favicon.png?v=3" crossorigin="use-credentials" />
 		<link
 			rel="apple-touch-icon"
 			sizes="180x180"
-			href="/static/apple-touch-icon.png"
+			href="/static/den-favicon.png?v=3"
 			crossorigin="use-credentials"
 		/>
 		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
@@ -272,8 +272,8 @@ html.dark :is(pre,code) {
   } catch (_) {}
 
   const start = () => {
-    const favicon = '/static/den-favicon.png?v=1';
-    const neco = '/static/den-neco.png?v=1';
+    const favicon = '/static/den-favicon.png?v=3';
+    const neco = '/static/den-neco.png?v=3';
 
     const apply = () => {
       document.querySelectorAll('link[rel]').forEach(link => {
@@ -330,12 +330,12 @@ html.dark :is(pre,code) {
 
 <!-- ECH0_DEN_CRT_LAYER_START -->
 
-<link rel="preload" href="/static/fonts/ShareTechMono-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="/static/fonts/VT323-Regular.ttf" as="font" type="font/ttf" crossorigin>
 
 <style id="ech0-den-crt-layer-style">
 @font-face {
-    font-family: "Share Tech Mono";
-    src: url("/static/fonts/ShareTechMono-Regular.ttf") format("truetype");
+    font-family: "VT323";
+    src: url("/static/fonts/VT323-Regular.ttf") format("truetype");
     font-style: normal;
     font-weight: 400;
     font-display: swap;
@@ -352,7 +352,7 @@ html.dark :is(pre,code) {
     --ech0-cyan: rgba(60, 220, 210, .20);
     --ech0-white-glow: rgba(180,255,185,.18);
 
-    --ech0-font: "Share Tech Mono", "DejaVu Sans Mono", monospace;
+    --ech0-font: "VT323", "DejaVu Sans Mono", monospace;
 }
 
 
@@ -384,13 +384,13 @@ b,
 h1, h2, h3, h4, h5, h6,
 [contenteditable="true"] {
     font-family: var(--ech0-font) !important;
-    letter-spacing: .01em !important;
+    letter-spacing: .015em !important;
 }
 
 
-/* Keep reading text crisp; the CRT atmosphere remains in the surrounding layers. */
+/* Larger pixel-terminal text keeps reading comfortable; the CRT atmosphere remains in the surrounding layers. */
 .prose, .markdown, [contenteditable="true"], textarea {
-    font-size: 17px !important;
+    font-size: 22px !important;
     line-height: 1.6 !important;
 }
 .prose p, .prose li, .markdown p, .markdown li,
@@ -408,7 +408,15 @@ h1, h2, h3, h4, h5, h6,
         min-width: 120px !important;
         max-width: calc(100vw - 16px) !important;
     }
-    #den-radio button { font-size: 12px !important; }
+    #den-radio button { font-size: 16px !important; }
+}
+
+/* Pixel glyphs need more room than the previous outline font. */
+body, button, input, select, label { font-size: 20px; }
+pre, code { font-size: 20px !important; line-height: 1.5 !important; }
+#den-radio button { font-size: 18px !important; }
+@media (max-width: 700px) {
+    .prose, .markdown, [contenteditable="true"], textarea { font-size: 20px !important; }
 }
 
 /* monochrome DOS-ish vibe */
@@ -721,7 +729,7 @@ body.ech0-j3 .ech0-crt-surface {
         height: 34px !important;
         min-height: 34px !important;
         max-height: 34px !important;
-        font-size: 12px !important;
+        font-size: 16px !important;
     }
 }
 
@@ -1182,7 +1190,7 @@ html.dark :is(h1,h2,h3) {
 
         display: block !important;
 
-        font-size: 12px !important;
+        font-size: 16px !important;
         line-height: 28px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
@@ -1385,47 +1393,6 @@ html.dark :is(h1,h2,h3) {
       button.title = 'Music missing or unreadable. Run ./scripts/set-music.sh /path/to/song.mp3, then refresh.';
     });
 
-    const refreshImages = () => {
-      const icon = '/static/den-favicon.png?v=2';
-      const neco = '/static/den-neco.png?v=2';
-
-      document.querySelectorAll('link[rel]').forEach(link => {
-        if (['icon','shortcut icon','apple-touch-icon'].includes(link.rel)) {
-          if (link.getAttribute('href') !== icon) {
-            link.href = icon;
-            link.type = 'image/png';
-            link.removeAttribute('sizes');
-          }
-        }
-      });
-
-      document.querySelectorAll('img').forEach(img => {
-        const src = img.getAttribute('src') || '';
-        const alt = img.getAttribute('alt') || '';
-        const logo = /\/(favicon(?:-[^/]*)?\.(png|svg|ico)|logo\.(png|svg)|splash(?:-dark)?\.png)(\?|$)/i.test(src);
-        if ((logo || /^open\s?webui(?:\s+logo)?$/i.test(alt.trim())) && src !== neco) {
-          img.removeAttribute('srcset');
-          img.src = neco;
-          img.alt = 'Neco — the den';
-          img.style.objectFit = 'contain';
-        }
-      });
-    };
-
-    let scheduled = false;
-    new MutationObserver(() => {
-      if (scheduled) return;
-      scheduled = true;
-      requestAnimationFrame(() => {
-        scheduled = false;
-        refreshImages();
-      });
-    }).observe(document.documentElement, {
-      subtree: true, childList: true,
-      attributes: true, attributeFilter: ['src','href']
-    });
-
-    refreshImages();
     update();
     play();
   };

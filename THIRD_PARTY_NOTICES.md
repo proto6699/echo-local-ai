@@ -29,7 +29,13 @@ No separate audio redistribution license was provided with the uploaded file.
 
 ## interface font
 
-Share Tech Mono by Carrois Type Design is bundled unchanged from
-https://github.com/google/fonts/tree/main/ofl/sharetechmono.
+VT323 by Peter Hull is bundled unchanged from
+https://github.com/google/fonts/tree/main/ofl/vt323.
 Licensed under the SIL Open Font License 1.1; see
-`openwebui/overlay/static/fonts/OFL-ShareTechMono.txt`.
+`openwebui/overlay/static/fonts/OFL-VT323.txt`.
+
+## supplied interface images
+
+`den-favicon.png` (cat photo) and `den-neco.png` (Neco illustration)
+were supplied by the repository owner for these interface uses.
+They are excluded from the MIT code license; rights remain with their respective rights holders.

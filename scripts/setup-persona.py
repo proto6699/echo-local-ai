@@ -55,13 +55,16 @@ def main():
     if not existing:
         payload = dict(id=model, base_model_id=None, name='Neco', meta={}, params={}, is_active=True)
     payload['params'] = dict(payload.get('params') or {}, system=prompt)
+    payload['meta'] = dict(payload.get('meta') or {}, profile_image_url='/static/den-neco.png?v=3')
     result = api('/api/v1/models/model/update' if existing else '/api/v1/models/create', payload)
     if not result:
         raise ValueError('Open WebUI did not confirm the model update.')
     saved = api(path)
     if not saved or saved.get('params', {}).get('system') != prompt:
         raise ValueError('Persona could not be verified after saving.')
-    print('Neco personality saved and verified for ' + model + '.')
+    if saved.get('meta', {}).get('profile_image_url') != payload['meta']['profile_image_url']:
+        raise ValueError('Neco avatar could not be verified after saving.')
+    print('Neco personality and avatar saved and verified for ' + model + '.')
     print('Refresh the Den and start a new chat with this model (new entries are named Neco).')
     print('Your account Personalization field can remain empty; the model now supplies the system prompt.')
 
