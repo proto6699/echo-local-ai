@@ -1,132 +1,111 @@
 # Echo Local AI
 
-**local model. persistent gremlin.**
+> **Serious engineering, playful presentation.**
 
-Neco lives in the Den: a CRT-styled Open WebUI with a local model, DOS typography, and a soundtrack. a small host daemon occasionally drops a thought into her own chat. serious engineering, playful presentation.
+A local AI with a CRT den, a soundtrack, and an unsolicited opinion about your toaster.
 
-## install
+**Meet Neco. Local model. Persistent gremlin.**
 
-Linux with systemd. The installer can add Docker, Compose, and Python on Arch/CachyOS or Debian/Ubuntu. **Ollama must be installed separately**; Compose starts the Den, not Ollama.
+Talk to her in your browser. Leave her alone and a small Python daemon occasionally drops a thought into her own chat. She has nowhere to be. You have installed her there.
 
-First download: several GB for Open WebUI, about **1.3 GB for the default model**, plus an embedding model on first boot.
+## The Den
 
-Run each step as your normal user, and wait for it to finish before continuing. The scripts ask for sudo when needed. They are Bash scripts; `bash script-name` also works when your terminal uses fish. Do not run the whole installer with sudo.
+![The Den home screen with Neco, CRT typography, and music control](docs/screenshots/den-home.png)
 
-### 1. Download the repo
+*Green phosphor, DOS typography, scanlines, static, glass reflections, and a little raster nonsense. The monitor is modern. Emotionally, it is not.*
+
+<details>
+<summary><b>Meanwhile, left unsupervised…</b></summary>
+
+![Neco wondering whether a neighbor's toaster is judging her](docs/screenshots/neco-idle.png)
+
+*“my neighbor's toaster is probably judging me right now.” — a productive use of local compute*
+
+</details>
+
+## What lives here?
+
+- **The Den:** customized Open WebUI with CRT effects and bundled music.
+- **Neco:** a character prompt and avatar, applied during setup.
+- **Idle thoughts:** messages in **Neco — idle**, normally every 20–45 minutes.
+- **A local backend:** Ollama serves the model. No paid inference API required.
+
+The escaped-lab backstory is fiction. The process occupying your laptop is unfortunately quite real.
+
+## Bring the gremlin home
+
+You need **Linux with systemd, Git, and Ollama**. The installer can add Docker, Compose, and Python on Arch/CachyOS or Debian/Ubuntu. A dedicated GPU is optional; CPU speed depends on your model and machine.
+
+Allow several GB for Open WebUI, roughly **1.3 GB** for the default model, and an embedding-model download on first boot.
+
+### 1. Download and install
+
+On **Arch/CachyOS**, run these lines in order. Stop if any command fails.
 
 ```bash
 git clone https://github.com/proto6699/echo-local-ai.git
 cd echo-local-ai
-```
-
-Already cloned it? Start with `cd ~/echo-local-ai`. Keep running the following commands from that folder.
-
-### 2. Install and start Ollama
-
-On **Arch/CachyOS**:
-
-```bash
 sudo pacman -Syu ollama
 sudo systemctl enable --now ollama
-```
-
-For GPU backend options or Debian/Ubuntu installation, see [setup notes](docs/setup.md). Installing a GPU backend does not prove GPU acceleration is active.
-
-If a command fails, stop and fix the reported error before continuing.
-
-### 3. Install the Den and Neco dependencies
-
-```bash
 bash ./install.sh
-```
-
-This creates `.env` if missing, generates the WebUI secret, creates Neco's Python environment, builds the Den, and registers Neco's user service. Existing `.env` settings are preserved.
-
-Wait for **“the Den container has started.”** A Buildx warning can be ignored if the build succeeds. Docker permission messages are handled by the installer using sudo.
-
-### 4. Configure Ollama and download the model
-
-```bash
 bash ./scripts/setup-ollama.sh
 ```
 
-This reads `NECO_MODEL` from `.env`, configures Ollama for Docker access, enables/restarts its service, and downloads the selected model. It binds Ollama to all interfaces; restrict port 11434 to trusted clients and Docker using your firewall. See [setup notes](docs/setup.md).
+Already cloned? Start from `cd ~/echo-local-ai`. Run scripts as your normal user; they ask for sudo themselves. Explicit `bash` commands also work from fish.
 
-Verify the local backend before activating Neco:
+The installer builds the Den and prepares Neco. The Ollama helper configures Docker access and pulls the model. **Ollama runs on the host, not in Compose.**
 
-```bash
-OLLAMA_HOST=127.0.0.1:11434 ollama list
-curl -sS -m 5 http://localhost:11434/api/tags
-```
+For **Debian/Ubuntu**, install Ollama using [setup notes](docs/setup.md), then run the two Bash scripts from the cloned repo.
 
-Both should list **`llama3.2:1b`** on a fresh install, or the model selected in your existing `.env`.
+The helper binds Ollama to all interfaces so Docker can reach it. Restrict port **11434** to trusted clients and Docker using your firewall. The Den itself defaults to localhost.
 
-### 5. Create your account and test a chat
+### 2. Knock on the door
 
-Open **http://localhost:3000**:
+Open **[localhost:3000](http://localhost:3000)**. Create an account—the first is admin—select **llama3.2:1b**, send `hey`, and wait for a reply.
 
-1. Create your account; the first account is admin.
-2. Select **llama3.2:1b** (or your configured model), send `hey`, and wait for a reply.
-3. Create an API key under **Settings → Account → API keys**.
+Create an API key under **Settings → Account → API keys**. Keep it private; the next script asks for it in your terminal.
 
-First boot may take a few minutes while the embedding model downloads. If no model appears, go to **Admin Settings → Connections → Ollama**, enable the API, and save `http://host.docker.internal:11434`. Then refresh. If it still fails, follow [connection troubleshooting](docs/setup.md).
-
-### 6. Apply Neco's persona and start her
+### 3. Give her the keys
 
 ```bash
 bash ./scripts/finish-setup.sh
 ```
 
-Paste the API key into the terminal when asked; do not post it publicly. An existing saved key is reused.
+This saves the key, applies the persona and avatar, tests a thought, and enables the idle daemon after logout/reboot. It disables Open WebUI's built-in tools for Neco, keeping note-editing schemas out of her conversation.
 
-This applies Neco's personality and avatar, generates a test thought, enables startup after logout/reboot, and runs diagnostics. It stops if a step fails. Once the problem is fixed, rerun the same command.
+**Refresh and start a new chat with Neco.** Click **DEN MUSIC** for the soundtrack. No manual prompt pasting or asset scavenger hunt.
 
-Refresh the Den and start a **new chat** with Neco (or the existing model name). Click **DEN MUSIC** for the bundled soundtrack. No manual prompt pasting, image uploads, or music copying.
+First boot can take a few minutes. If a step fails, fix it and rerun that step. The [full walkthrough](docs/install.md) and [troubleshooting notes](docs/setup.md) hold the less charming details.
 
-### 7. Check everything
+## Under the floorboards
 
-```bash
-bash ./scripts/doctor.sh
-```
+| Resident | Job |
+| --- | --- |
+| Open WebUI + Docker | Browser chat, saved conversations, and the Den |
+| Ollama | Local model inference |
+| Python + systemd user service | Idle thoughts and a few host observations |
+| HTML, CSS, JavaScript | CRT atmosphere and the music control |
 
-If persona setup says **“NECO_MODEL is not available to this account”**, verify Ollama first:
+Closing the browser does not stop the daemon. Suspending the machine pauses it. She cannot outthink a closed laptop.
 
-```bash
-sudo systemctl enable --now ollama
-bash ./scripts/setup-ollama.sh
-```
+## Small brain, modest rent
 
-Then verify a normal chat in the Den and rerun `bash ./scripts/finish-setup.sh`. If Ollama cannot start, inspect `sudo journalctl -u ollama --no-pager -n 80`. Do not delete/reclone the repo to fix a stopped service.
+The default is **`llama3.2:1b`** with the compact [lite persona](neco/persona-lite.md). It is a starting point for smaller machines, not a guarantee of great answers. Check `ollama ps` during generation to see CPU/GPU placement.
 
-For manual Docker checks, use `sudo docker compose ps` if your user cannot access Docker. [More troubleshooting →](docs/setup.md)
+Settings live in `.env`: model, owner name, idle interval, and persona choice. `NECO_PERSONA=full` selects the [longer backstory](neco/persona.md) for stronger hardware. After changing the model or persona, rerun the Ollama helper and finish setup, then start a new chat.
 
-## the model
+<details>
+<summary><b>Maintenance hatch — checks, updates, and the off switch</b></summary>
 
-**`llama3.2:1b`** is the new-install default: a roughly [1.3 GB instruction-tuned model](https://ollama.com/library/llama3.2:1b). a practical starting point, not a guarantee of speed or character quality on every machine. it uses the compact laptop persona by default.
+| What you want | Command |
+| --- | --- |
+| Check the installation | `bash ./scripts/doctor.sh` |
+| Pause unsolicited thoughts | `systemctl --user stop echo-local-ai-neco.service` |
+| Start them again | `bash ./scripts/start-neco.sh` |
+| Inspect Docker | `sudo docker compose ps` |
+| Replace the soundtrack | `./scripts/set-music.sh /path/to/song.mp3` |
 
-bigger does not mean faster. if responses crawl, run `ollama ps` while generating to see whether the model is on CPU or GPU. the old `qwen2.5:0.5b` was only a plumbing test; it failed the full persona in our direct Ollama test.
-
-existing `.env` files are preserved. to switch an older install to the new default:
-
-```bash
-sed -i 's/^NECO_MODEL=.*/NECO_MODEL=llama3.2:1b/' .env
-./scripts/setup-ollama.sh
-./scripts/finish-setup.sh
-```
-
-## what stays running
-
-Docker runs the Den. Ollama serves the model. a systemd user service runs Neco, normally posting every **20–45 minutes** in **Neco — idle**. sleep pauses her; closing the browser does not.
-
-```bash
-./scripts/doctor.sh
-systemctl --user stop echo-local-ai-neco.service
-./scripts/start-neco.sh
-```
-
-settings live in `.env`; the compact interactive personality lives in [`neco/persona-lite.md`](neco/persona-lite.md); set `NECO_PERSONA=full` for the detailed version on stronger hardware. the daemon has its own short idle prompt. the self-aware backstory is fiction; the resident process is real.
-
-## update
+Update from the repo folder:
 
 ```bash
 git pull --ff-only origin main
@@ -134,10 +113,16 @@ sudo docker compose up -d --build
 python3 scripts/setup-persona.py
 ```
 
-hard-refresh the browser afterward. applying the persona replaces the configured model’s system prompt and avatar; other model settings are preserved.
+Hard-refresh afterward. Persona setup replaces the system prompt and avatar and disables built-in tools; other model settings are preserved.
 
-## credits
+Missing models, service failures, and firewall checks: [setup notes](docs/setup.md).
 
-built on **Open WebUI v0.11.4**. VT323 typography, supplied cat/Neco images, and **tearreflection — upgrades** give the Den its atmosphere.
+</details>
 
-original project code is MIT-licensed. upstream software, fonts, images, and music have separate rights; see [third-party notices](THIRD_PARTY_NOTICES.md) and [Open WebUI’s license](OPENWEBUI_LICENSE.txt).
+## Credits
+
+Built on **Open WebUI v0.11.4**, with VT323 typography, supplied Neco/cat images, and **tearreflection — upgrades**.
+
+Original project code is MIT-licensed. Upstream software, fonts, images, and music have separate rights: [third-party notices](THIRD_PARTY_NOTICES.md) · [Open WebUI license](OPENWEBUI_LICENSE.txt).
+
+*The toaster has declined to comment.*
