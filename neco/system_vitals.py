@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -130,7 +130,7 @@ def collect_vitals() -> dict[str, Any]:
     except OSError:
         load = None
     return {
-        "sampled_at": datetime.now(UTC).isoformat(timespec="seconds"),
+        "sampled_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "uptime_hours": uptime_hours,
         "load_average": load,
         "memory": _memory(),
