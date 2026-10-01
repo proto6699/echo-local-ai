@@ -80,7 +80,11 @@ def main():
         raise SetupError('The bundled Neco avatar is not a PNG. Restore den-neco.png from the repo.')
     avatar = 'data:image/png;base64,' + base64.b64encode(image).decode('ascii')
     payload['meta'] = dict(payload.get('meta') or {}, profile_image_url=avatar)
-    step('Saving personality and avatar')
+    # Open WebUI enables builtin tools by default for UI/session requests.
+    # Neco's small chat model should not receive note-editing/tool schemas.
+    payload['meta']['capabilities'] = dict(
+        payload['meta'].get('capabilities') or {}, builtin_tools=False)
+    step('Saving personality, avatar, and chat-only capabilities')
     result = api('/api/v1/models/model/update' if existing else '/api/v1/models/create', payload)
     if not result:
         raise SetupError('Open WebUI did not confirm the model update.')
@@ -90,6 +94,8 @@ def main():
         raise SetupError('Persona could not be verified after saving.')
     if saved.get('meta', {}).get('profile_image_url') != payload['meta']['profile_image_url']:
         raise SetupError('Neco avatar could not be verified after saving.')
+    if saved.get('meta', {}).get('capabilities', {}).get('builtin_tools') is not False:
+        raise SetupError('Chat-only capability could not be verified after saving.')
     print('Neco ' + persona + ' personality and avatar saved and verified for ' + model + '.')
     print('Refresh the Den and start a new chat with this model (new entries are named Neco).')
     print('Your account Personalization field can remain empty; the model now supplies the system prompt.')
