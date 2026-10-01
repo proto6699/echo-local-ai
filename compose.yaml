@@ -2,12 +2,12 @@ services:
   openwebui:
     build:
       context: ./openwebui
-    container_name: echo-local-ai-webui
+    container_name: echo-local-ai-v2-webui
     restart: unless-stopped
     ports:
       - "${OPENWEBUI_BIND:-127.0.0.1}:${OPENWEBUI_PORT:-3000}:8080"
     volumes:
-      - echo-local-ai-webui-data:/app/backend/data
+      - echo-local-ai-v2-webui-data:/app/backend/data
       - ./.runtime:/host-runtime:ro
     environment:
       WEBUI_SECRET_KEY: "${WEBUI_SECRET_KEY}"
@@ -17,4 +17,4 @@ services:
       - "host.docker.internal:host-gateway"
 
 volumes:
-  echo-local-ai-webui-data:
+  echo-local-ai-v2-webui-data:
