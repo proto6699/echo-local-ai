@@ -1,56 +1,23 @@
 #!/usr/bin/env python3
-import os
-import sys
-import threading
-import time
-from pathlib import Path
+from __future__ import annotations
 
-import neco_monologue as neco
-from system_vitals import write_snapshot
+import argparse
 
-ROOT = Path(__file__).resolve().parent.parent
-
-def env_int(name, default):
-    value = os.getenv(name)
-    return int(value) if value not in (None, "") else default
-
-port = os.getenv("OPENWEBUI_PORT", "3000")
-
-neco.BASE_URL = os.getenv("OPENWEBUI_URL", f"http://127.0.0.1:{port}")
-neco.MODEL = os.getenv("NECO_MODEL", getattr(neco, "MODEL", "glm4:9b"))
-neco.CHAT_TITLE = os.getenv("NECO_CHAT_TITLE", getattr(neco, "CHAT_TITLE", "Neco — idle"))
-neco.MIN_INTERVAL = env_int("NECO_MIN_INTERVAL", getattr(neco, "MIN_INTERVAL", 1200))
-neco.MAX_INTERVAL = env_int("NECO_MAX_INTERVAL", getattr(neco, "MAX_INTERVAL", 2700))
-
-if neco.MIN_INTERVAL > neco.MAX_INTERVAL:
-    raise SystemExit("NECO_MIN_INTERVAL cannot be greater than NECO_MAX_INTERVAL")
-
-neco.TOKEN_FILE = os.getenv("NECO_TOKEN_FILE", str(ROOT / ".runtime" / "neco_token"))
-neco.STATE_FILE = os.getenv("NECO_STATE_FILE", str(ROOT / ".runtime" / "neco_state.json"))
-
-owner = os.getenv("OWNER_NAME", "Echo")
-machine = os.getenv("NECO_MACHINE", "this machine")
-
-if hasattr(neco, "BASE_PERSONA"):
-    neco.BASE_PERSONA = neco.BASE_PERSONA.replace("Echo", owner)
-    neco.BASE_PERSONA = neco.BASE_PERSONA.replace("BC-250", machine)
+from .config import Settings
+from .loop import NecoRuntime
 
 
-def vitals_loop():
-    """Keep a small read-only host snapshot fresh for the Open WebUI filter."""
-    last_error = None
-    while True:
-        try:
-            write_snapshot()
-            last_error = None
-        except Exception as error:
-            message = f"{type(error).__name__}: {error}"
-            if message != last_error:
-                print(f"[vitals] snapshot unavailable: {message}", flush=True)
-                last_error = message
-        time.sleep(5)
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Neco resident runtime")
+    parser.add_argument("--test", action="store_true", help="post one thought and exit")
+    args = parser.parse_args()
+    try:
+        settings = Settings.from_env()
+    except (ValueError, OSError) as exc:
+        print(f"[config] {exc}")
+        return 2
+    return NecoRuntime(settings).run(test_mode=args.test)
 
 
 if __name__ == "__main__":
-    threading.Thread(target=vitals_loop, name="neco-vitals", daemon=True).start()
-    neco.main_loop(test_mode="--test" in sys.argv)
+    raise SystemExit(main())
