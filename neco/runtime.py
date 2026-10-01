@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 import os
 import sys
+import threading
+import time
 from pathlib import Path
 
 import neco_monologue as neco
+from system_vitals import write_snapshot
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -32,5 +35,22 @@ if hasattr(neco, "BASE_PERSONA"):
     neco.BASE_PERSONA = neco.BASE_PERSONA.replace("Echo", owner)
     neco.BASE_PERSONA = neco.BASE_PERSONA.replace("BC-250", machine)
 
+
+def vitals_loop():
+    """Keep a small read-only host snapshot fresh for the Open WebUI filter."""
+    last_error = None
+    while True:
+        try:
+            write_snapshot()
+            last_error = None
+        except Exception as error:
+            message = f"{type(error).__name__}: {error}"
+            if message != last_error:
+                print(f"[vitals] snapshot unavailable: {message}", flush=True)
+                last_error = message
+        time.sleep(5)
+
+
 if __name__ == "__main__":
+    threading.Thread(target=vitals_loop, name="neco-vitals", daemon=True).start()
     neco.main_loop(test_mode="--test" in sys.argv)
