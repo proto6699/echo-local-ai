@@ -144,7 +144,7 @@ sudo docker compose ps
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -r neco/requirements.txt -r neco/requirements-dev.txt
-ruff check neco tests scripts/setup-persona.py scripts/doctor.py
+ruff check neco tests scripts/setup-persona.py
 pytest -q
 ```
 
