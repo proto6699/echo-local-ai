@@ -6,8 +6,7 @@ chmod 700 "$ROOT/.runtime"
 printf 'Open WebUI API key: '
 IFS= read -r -s TOKEN
 printf '\n'
-[[ -n "$TOKEN" ]] || { echo "No token entered."; exit 1; }
+[[ -n "$TOKEN" ]] || { echo 'No token entered.'; exit 1; }
 printf '%s' "$TOKEN" > "$ROOT/.runtime/neco_token"
 chmod 600 "$ROOT/.runtime/neco_token"
-echo "Token saved."
-python3 "$ROOT/scripts/setup-persona.py"
+echo 'Token saved locally.'

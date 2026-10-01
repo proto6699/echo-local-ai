@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
-echo "== the den =="
-docker compose ps || true
+echo '== Den =='
+if docker info >/dev/null 2>&1; then
+  docker compose ps
+else
+  sudo docker compose ps
+fi
 echo
-echo "== neco =="
-systemctl --user --no-pager --full status echo-local-ai-neco.service || true
+echo '== Neco =='
+systemctl --user --no-pager --full status echo-local-ai-v2-neco.service || true
