@@ -40,26 +40,21 @@ def _temp_c(path: Path) -> float | None:
     return None
 
 
-def _memory() -> dict[str, float] | None:
+def _parse_meminfo(text: str) -> dict[str, float] | None:
     values: dict[str, int] = {}
-    try:
-        for line in Path("/proc/meminfo").read_text().splitlines():
-            key, _, rest = line.partition(":")
-            if not rest:
-                continue
-            parts = rest.strip().split()
-            if parts and parts[0].isdigit():
-                values[key] = int(parts[0]) * 1024
-    except OSError:
-        return None
-
+    for line in text.splitlines():
+        key, _, rest = line.partition(":")
+        if not rest:
+            continue
+        parts = rest.strip().split()
+        if parts and parts[0].isdigit():
+            values[key] = int(parts[0]) * 1024
     total = values.get("MemTotal")
     available = values.get("MemAvailable")
     if not total or available is None:
         return None
-
     used = max(0, total - available)
-    gib = 1024 ** 3
+    gib = 1024**3
     return {
         "used_gib": round(used / gib, 2),
         "total_gib": round(total / gib, 2),
@@ -67,21 +62,25 @@ def _memory() -> dict[str, float] | None:
     }
 
 
+def _memory() -> dict[str, float] | None:
+    try:
+        return _parse_meminfo(Path("/proc/meminfo").read_text())
+    except OSError:
+        return None
+
+
 def _cpu_temp() -> float | None:
     preferred = ("k10temp", "coretemp", "zenpower", "cpu_thermal", "acpitz")
-
     candidates: list[tuple[int, Path]] = []
     for hwmon in Path("/sys/class/hwmon").glob("hwmon*"):
         name = (_read_text(hwmon / "name") or "").lower()
         score = 0 if name in preferred else 1
         for sensor in hwmon.glob("temp*_input"):
             candidates.append((score, sensor))
-
     for _, sensor in sorted(candidates, key=lambda item: item[0]):
         value = _temp_c(sensor)
         if value is not None:
             return value
-
     for zone in Path("/sys/class/thermal").glob("thermal_zone*"):
         value = _temp_c(zone / "temp")
         if value is not None:
@@ -94,34 +93,27 @@ def _gpu_stats() -> dict[str, Any] | None:
         device = card / "device"
         if not device.exists():
             continue
-
         vendor = (_read_text(device / "vendor") or "").lower()
-        # 0x1002 = AMD. Other vendors simply report unavailable for now.
         if vendor != "0x1002":
             continue
-
         result: dict[str, Any] = {"card": card.name, "vendor": "amd"}
-
         busy = _read_int(device / "gpu_busy_percent")
         if busy is not None:
             result["load_percent"] = max(0, min(100, busy))
-
         vram_used = _read_int(device / "mem_info_vram_used")
         vram_total = _read_int(device / "mem_info_vram_total")
-        gib = 1024 ** 3
+        gib = 1024**3
         if vram_used is not None:
             result["vram_used_gib"] = round(vram_used / gib, 2)
         if vram_total:
             result["vram_total_gib"] = round(vram_total / gib, 2)
             if vram_used is not None:
                 result["vram_used_percent"] = round((vram_used / vram_total) * 100, 1)
-
         for hwmon in device.glob("hwmon/hwmon*"):
             value = _temp_c(hwmon / "temp1_input")
             if value is not None:
                 result["temp_c"] = value
                 break
-
         return result
     return None
 
@@ -132,17 +124,11 @@ def collect_vitals() -> dict[str, Any]:
         uptime_hours = round(uptime_seconds / 3600, 1)
     except (OSError, ValueError, IndexError):
         uptime_hours = None
-
     try:
         load_1m, load_5m, load_15m = os.getloadavg()
-        load = {
-            "1m": round(load_1m, 2),
-            "5m": round(load_5m, 2),
-            "15m": round(load_15m, 2),
-        }
+        load = {"1m": round(load_1m, 2), "5m": round(load_5m, 2), "15m": round(load_15m, 2)}
     except OSError:
         load = None
-
     return {
         "sampled_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "uptime_hours": uptime_hours,
@@ -156,7 +142,6 @@ def collect_vitals() -> dict[str, Any]:
 def write_snapshot(path: Path = DEFAULT_SNAPSHOT) -> dict[str, Any]:
     data = collect_vitals()
     path.parent.mkdir(parents=True, exist_ok=True)
-
     fd, temp_name = tempfile.mkstemp(prefix=".system-vitals.", dir=path.parent)
     try:
         with os.fdopen(fd, "w") as handle:
@@ -169,7 +154,6 @@ def write_snapshot(path: Path = DEFAULT_SNAPSHOT) -> dict[str, Any]:
             os.unlink(temp_name)
         except FileNotFoundError:
             pass
-
     return data
 
 
