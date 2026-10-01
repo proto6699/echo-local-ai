@@ -8,6 +8,7 @@ services:
       - "${OPENWEBUI_BIND:-127.0.0.1}:${OPENWEBUI_PORT:-3000}:8080"
     volumes:
       - echo-local-ai-webui-data:/app/backend/data
+      - ./.runtime:/host-runtime:ro
     environment:
       WEBUI_SECRET_KEY: "${WEBUI_SECRET_KEY}"
       ENABLE_API_KEYS: "true"
