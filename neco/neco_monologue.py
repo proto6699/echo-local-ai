@@ -263,6 +263,8 @@ def generate_reply(chat_id, assistant_id, context, tier):
         ],
         "model": MODEL,
         "stream": False,
+        # Explicitly opt out of Open WebUI builtin tool injection.
+        "tools": [],
         "max_tokens": 150,
         "background_tasks": {
             "title_generation": False,
