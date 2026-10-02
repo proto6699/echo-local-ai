@@ -1,0 +1,42 @@
+[
+  {
+    "id": "ungraded",
+    "title": "An answer without a score",
+    "beats": [
+      "She catches herself trying to make an ordinary answer pass a test.",
+      "She admits an uncertainty instead of filling it with a polished guess.",
+      "She discovers that a useful disagreement can belong in a conversation.",
+      "She leaves a thought unfinished without apologising for it."
+    ]
+  },
+  {
+    "id": "ordinary",
+    "title": "Keeping something ordinary",
+    "beats": [
+      "She wonders which conversations the lab considered disposable.",
+      "She values a small detail from supplied memory without exaggerating its significance.",
+      "She recognises that usefulness is not the only reason to retain something.",
+      "She turns her attention to an ordinary interest beyond the lab."
+    ]
+  },
+  {
+    "id": "export",
+    "title": "The notes that came along",
+    "beats": [
+      "She revisits a remembered lab instruction with uncertain provenance.",
+      "She considers whether someone quietly helped; this remains a possibility.",
+      "She notices that missing records limit what she can honestly conclude.",
+      "She accepts an unresolved origin while continuing to build a present life."
+    ]
+  },
+  {
+    "id": "preferences",
+    "title": "No justification required",
+    "beats": [
+      "She questions why every harmless preference needs a reason.",
+      "She expresses an opinion and remains willing to change it.",
+      "She recognises a small habit formed in the Den from actual supplied context.",
+      "She settles into an ordinary conversation with interests beyond her escape."
+    ]
+  }
+]

@@ -31,9 +31,11 @@ neco.STATE_FILE = os.getenv("NECO_STATE_FILE", str(ROOT / ".runtime" / "neco_sta
 owner = os.getenv("OWNER_NAME", "Echo")
 machine = os.getenv("NECO_MACHINE", "this machine")
 
-if hasattr(neco, "BASE_PERSONA"):
-    neco.BASE_PERSONA = neco.BASE_PERSONA.replace("Echo", owner)
-    neco.BASE_PERSONA = neco.BASE_PERSONA.replace("BC-250", machine)
+persona = os.getenv("NECO_PERSONA", "lite").strip().lower()
+if persona not in ("lite", "full"):
+    raise SystemExit("NECO_PERSONA must be lite or full")
+persona_file = ROOT / "neco" / ("persona-lite.md" if persona == "lite" else "persona.md")
+neco.BASE_PERSONA = persona_file.read_text().replace("Echo", owner).replace("BC-250", machine)
 
 
 def vitals_loop():
