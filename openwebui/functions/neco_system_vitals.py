@@ -1,7 +1,7 @@
 """
 title: Neco System Vitals
 description: Experimental read-only host telemetry context for Neco.
-version: 0.1.0
+version: 0.1.1
 """
 
 import json
@@ -13,6 +13,7 @@ TRIGGERS = (
     "temp", "temperature", "hot", "heat",
     "cpu", "gpu", "ram", "memory", "vram",
     "load", "uptime", "vitals", "system status",
+    "battery", "charge", "charging", "power level",
     "system health", "machine status", "hardware",
     "how are you", "how're you", "how are u",
     "how you feeling", "how are you feeling",
@@ -62,6 +63,15 @@ def _format_vitals(data):
     if data.get("cpu_temp_c") is not None:
         lines.append(f"cpu_temp_c: {data['cpu_temp_c']}")
 
+    battery = data.get("battery")
+    if isinstance(battery, dict):
+        for item in battery.get("batteries", []):
+            percent = item.get("percent")
+            level = f"{percent}%" if percent is not None else "percentage unavailable"
+            lines.append(f"battery {item.get('name', '?')}: {level}; {item.get('status') or 'status unavailable'}")
+    else:
+        lines.append("battery: unavailable (no readable battery sensor)")
+
     gpu = data.get("gpu")
     if isinstance(gpu, dict):
         parts = [gpu.get("vendor", "gpu")]
@@ -76,7 +86,7 @@ def _format_vitals(data):
         lines.append("gpu: " + ", ".join(str(part) for part in parts))
 
     lines.append(
-        "Use these measurements only when relevant. Missing fields mean the sensor "
+        "These readings describe the host machine, not a physical body. When asked, report actual values plainly before character commentary. Missing fields mean the sensor "
         "is unavailable; never invent a value."
     )
     return "\n".join(lines)
@@ -93,9 +103,19 @@ class Filter:
         try:
             data = json.loads(SNAPSHOT.read_text())
         except (OSError, json.JSONDecodeError):
-            return body
+            data = None
 
-        context = _format_vitals(data)
+        context = "Host vitals unavailable: the daemon has not supplied a readable snapshot. Do not invent readings."
+        if isinstance(data, dict):
+            from datetime import datetime, timezone
+            try:
+                age = (datetime.now(timezone.utc) - datetime.fromisoformat(data['sampled_at'])).total_seconds()
+                if -10 <= age <= 60:
+                    context = _format_vitals(data)
+                else:
+                    context = "Host vitals snapshot is stale. Current readings unavailable; do not report old values as live."
+            except (KeyError, TypeError, ValueError):
+                context = "Host vitals timestamp unavailable; do not report readings as live."
         for message in messages:
             if message.get("role") == "system" and isinstance(message.get("content"), str):
                 message["content"] += "\n\n" + context

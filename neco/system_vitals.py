@@ -126,6 +126,20 @@ def _gpu_stats() -> dict[str, Any] | None:
     return None
 
 
+def _battery(root: Path = Path("/sys/class/power_supply")) -> dict[str, Any] | None:
+    """Read available Linux batteries without privileges; no battery means None."""
+    batteries = []
+    for device in sorted(root.glob("*")):
+        if _read_text(device / "type") != "Battery":
+            continue
+        percent = _read_int(device / "capacity")
+        if percent is not None and not 0 <= percent <= 100:
+            percent = None
+        batteries.append({"name": device.name, "percent": percent,
+                          "status": _read_text(device / "status")})
+    return {"batteries": batteries} if batteries else None
+
+
 def collect_vitals() -> dict[str, Any]:
     try:
         uptime_seconds = float(Path("/proc/uptime").read_text().split()[0])
@@ -150,6 +164,7 @@ def collect_vitals() -> dict[str, Any]:
         "memory": _memory(),
         "cpu_temp_c": _cpu_temp(),
         "gpu": _gpu_stats(),
+        "battery": _battery(),
     }
 
 

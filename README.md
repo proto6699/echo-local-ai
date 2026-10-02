@@ -126,10 +126,17 @@ Current sensors:
 
 - host uptime and 1/5/15-minute load average
 - RAM used / total
+- battery percentage and charging/discharging status when Linux exposes a battery
 - CPU temperature when Linux exposes a usable hwmon/thermal sensor
 - AMD GPU temperature, load, and VRAM when those sysfs counters are available
 
 Hardware support is intentionally best-effort. Missing sensors stay missing; Neco is told not to invent a value.
+
+Snapshots older than 60 seconds are treated as stale. If the daemon is stopped
+or the snapshot is missing, the filter explicitly reports readings unavailable.
+To enable the snapshot service, run `./scripts/start-neco.sh`. After updating the
+collector/filter, run `python3 scripts/setup-persona.py` and restart
+`echo-local-ai-neco.service`.
 
 See the raw host reading without involving the model:
 
