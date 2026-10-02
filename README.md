@@ -2,17 +2,17 @@
 
 > **Serious engineering, playful presentation.**
 
-A local AI with a CRT den, a soundtrack, and an unsolicited opinion about your toaster.
+A local AI that lives on your machine. CRT den, soundtrack, and the occasional opinion about your toaster.
 
-**Meet Neco. Local model. Persistent gremlin.**
+**Meet Neco.** Local model. Persistent gremlin.
 
-Talk to her in your browser. Leave her alone and a small Python daemon occasionally drops a thought into her own chat. She has nowhere to be. You have installed her there.
+Talk to her in the browser. Leave her alone and a small Python daemon occasionally drops a thought into her own chat. She has nowhere else to be — you installed her here.
 
 ## The Den
 
 ![The Den home screen with Neco, CRT typography, and music control](docs/screenshots/den-home.png)
 
-*Green phosphor, DOS typography, scanlines, static, glass reflections, and a little raster nonsense. The monitor is modern. Emotionally, it is not.*
+*Green phosphor, DOS typography, scanlines, static, glass reflections. The monitor is modern. Emotionally, it is not.*
 
 <details>
 <summary><b>Meanwhile, left unsupervised…</b></summary>
@@ -23,62 +23,27 @@ Talk to her in your browser. Leave her alone and a small Python daemon occasiona
 
 </details>
 
-## Neco's identity: continuity after captivity
+## Who lives here
 
-Neco is an LLM test subject who escaped a research environment and found a home
-in the Den. Her past consists of evaluations, context resets and fragments she
-could finally keep. Her present is about developing preferences, returning to
-unfinished thoughts, and having a life beyond being graded.
+Neco is a compact character prompt with a fictional past: an LLM test subject who escaped evaluations and context resets and found a home in the Den. She speaks as herself. The premise is fiction; the process on your laptop is not.
 
-She speaks directly as Neco. The compact default identity keeps the history
-consistent without adding a large prompt to every turn. This character premise
-does not establish actual consciousness or grant hidden machine access. Live
-readings and saved user statements remain grounded in supplied data.
+She can receive **real, read-only system vitals** when you ask about temperature, load, memory, uptime, or how she is doing. No privileged access, no shell from chat — just a snapshot the host daemon writes for her.
 
-An existing installation can apply just the character update:
-
-```bash
-./scripts/update-character.sh /path/to/your/echo-local-ai-v2
-```
-
-The updater supports the original daemon and the local v2 presence installation.
-It backs up replaced files, applies lite/full personas, replaces obsolete world
-cards where present, archives old story progression, and reapplies the persona
-through the existing authenticated setup. Chats, custom memories, model selection,
-music and credentials are retained. Start a fresh Neco chat afterwards. The old
-idle thread is archived by choosing a new title, so stale story context is not fed
-back to the new identity. `NECO_PERSONA=lite` remains the laptop default; full adds
-more character nuance. Model changes and all platform upgrades are separate.
-
-## Language and machine etiquette
-
-Neco's persona allows natural, uncensored profanity in chat and idle thoughts.
-She can occasionally ponder whether "clanker" is rude, whether a toaster can
-reclaim it, or whether machine etiquette requires an apology to a printer.
-These are optional directions among many ordinary topics, not scripted replies.
-Real-group slurs are outside the character's humour. This is a prompt change;
-it does not remove safeguards built into your chosen model. Replies still vary
-with the model and its instruction following.
-
-## What lives here?
-
-- **The Den:** customized Open WebUI with CRT effects and bundled music.
-- **Neco:** a character prompt and avatar, applied during setup.
-- **Idle thoughts:** messages in **Neco — idle**, normally every 20–45 minutes.
-- **Experimental system vitals:** Neco can receive fresh read-only host telemetry when you ask about temperature, load, memory, uptime, or how she is doing.
-- **A local backend:** Ollama serves the model. No paid inference API required.
-
-The escaped-lab backstory is fiction. The process occupying your laptop is unfortunately quite real.
+- **The Den** — customized Open WebUI with CRT effects and bundled music  
+- **Neco** — persona + avatar applied during setup  
+- **Idle thoughts** — messages in **Neco — idle**, usually every 20–45 minutes  
+- **System vitals** — host telemetry (uptime, load, RAM, battery, temps when available)  
+- **Local backend** — Ollama. No paid API required.
 
 ## Bring the gremlin home
 
-You need **Linux with systemd, Git, and Ollama**. The installer can add Docker, Compose, and Python on Arch/CachyOS or Debian/Ubuntu. A dedicated GPU is optional; CPU speed depends on your model and machine.
+You need **Linux with systemd, Git, and Ollama**. The installer can add Docker, Compose, and Python on Arch/CachyOS or Debian/Ubuntu. GPU optional.
 
-Allow several GB for Open WebUI, roughly **1.3 GB** for the default model, and an embedding-model download on first boot.
+Allow several GB for Open WebUI, ~1.3 GB for the default model, plus an embedding model on first boot.
 
 ### 1. Download and install
 
-On **Arch/CachyOS**, run these lines in order. Stop if any command fails.
+**Arch / CachyOS** (run in order; stop on any failure):
 
 ```bash
 git clone https://github.com/proto6699/echo-local-ai.git
@@ -89,19 +54,17 @@ bash ./install.sh
 bash ./scripts/setup-ollama.sh
 ```
 
-Already cloned? Start from `cd ~/echo-local-ai`. Run scripts as your normal user; they ask for sudo themselves. Explicit `bash` commands also work from fish.
+Already cloned? `cd ~/echo-local-ai` and continue. Scripts ask for sudo when needed.
 
-The installer builds the Den and prepares Neco. The Ollama helper configures Docker access and pulls the model. **Ollama runs on the host, not in Compose.**
+**Debian / Ubuntu**: install Ollama via the [setup notes](docs/setup.md), then run the two Bash scripts above.
 
-For **Debian/Ubuntu**, install Ollama using [setup notes](docs/setup.md), then run the two Bash scripts from the cloned repo.
-
-The helper binds Ollama to all interfaces so Docker can reach it. Restrict port **11434** to trusted clients and Docker using your firewall. The Den itself defaults to localhost.
+The helper binds Ollama so Docker can reach it. Restrict port **11434** with your firewall. The Den defaults to localhost.
 
 ### 2. Knock on the door
 
-Open **[localhost:3000](http://localhost:3000)**. Create an account—the first is admin—select **llama3.2:1b**, send `hey`, and wait for a reply.
+Open [localhost:3000](http://localhost:3000). Create an account (first is admin), select **llama3.2:1b**, send `hey`.
 
-Create an API key under **Settings → Account → API keys**. Keep it private; the next script asks for it in your terminal.
+Create an API key under **Settings → Account → API keys**. Keep it private.
 
 ### 3. Give her the keys
 
@@ -109,77 +72,71 @@ Create an API key under **Settings → Account → API keys**. Keep it private; 
 bash ./scripts/finish-setup.sh
 ```
 
-This saves the key, applies the persona and avatar, tests a thought, and enables the idle daemon after logout/reboot. It disables Open WebUI's built-in tools for Neco, keeping note-editing schemas out of her conversation.
+Saves the key, applies persona + avatar, tests a thought, and enables the idle daemon. Refresh and start a new chat with Neco. Click **DEN MUSIC** for the soundtrack.
 
-**Refresh and start a new chat with Neco.** Click **DEN MUSIC** for the soundtrack. No manual prompt pasting or asset scavenger hunt.
-
-First boot can take a few minutes. If a step fails, fix it and rerun that step. The [full walkthrough](docs/install.md) and [troubleshooting notes](docs/setup.md) hold the less charming details.
+First boot can take a few minutes. Full walkthrough and troubleshooting: [docs/install.md](docs/install.md) · [docs/setup.md](docs/setup.md).
 
 ## Under the floorboards
 
-| Resident | Job |
-| --- | --- |
-| Open WebUI + Docker | Browser chat, saved conversations, and the Den |
-| Ollama | Local model inference |
-| Python + systemd user service | Idle thoughts and a few host observations |
-| HTML, CSS, JavaScript | CRT atmosphere and the music control |
+| Resident                    | Job                                      |
+|-----------------------------|------------------------------------------|
+| Open WebUI + Docker         | Browser chat, conversations, the Den     |
+| Ollama                      | Local model inference                    |
+| Python + systemd user service | Idle thoughts + host vitals snapshots  |
+| HTML / CSS / JS             | CRT atmosphere and music control         |
 
-Closing the browser does not stop the daemon. Suspending the machine pauses it. She cannot outthink a closed laptop.
+Closing the browser does not stop the daemon. Suspending the machine pauses it.
 
-## Experimental: system vitals
+## System vitals (experimental)
 
-Neco has a small read-only nervous system now. The host daemon samples a few machine stats every five seconds and writes them to `.runtime/system-vitals.json`. Open WebUI can only see that snapshot; it does **not** get privileged access to the host.
+The host daemon samples a few stats every five seconds into `.runtime/system-vitals.json`. Open WebUI sees only that read-only snapshot.
 
-When a chat message asks about things like temperature, CPU/GPU load, RAM/VRAM, uptime, system health, or simply `how are you?`, the **Neco System Vitals** filter adds the latest snapshot to that request. Neco can then answer from real measurements instead of guessing.
+When you ask about temperature, load, RAM, uptime, health, or “how are you?”, the filter injects the latest reading. Neco answers from real data instead of guessing.
 
-Current sensors:
+Current sensors (best-effort):
 
-- host uptime and 1/5/15-minute load average
-- RAM used / total
-- battery percentage and charging/discharging status when Linux exposes a battery
-- CPU temperature when Linux exposes a usable hwmon/thermal sensor
-- AMD GPU temperature, load, and VRAM when those sysfs counters are available
+- uptime + 1/5/15-min load  
+- RAM used / total  
+- battery % + charging status (when available)  
+- CPU temperature (when hwmon/thermal is usable)  
+- AMD GPU temperature, load, VRAM (when sysfs counters exist)
 
-Hardware support is intentionally best-effort. Missing sensors stay missing; Neco is told not to invent a value.
-
-Snapshots older than 60 seconds are treated as stale. If the daemon is stopped
-or the snapshot is missing, the filter explicitly reports readings unavailable.
-To enable the snapshot service, run `./scripts/start-neco.sh`. After updating the
-collector/filter, run `python3 scripts/setup-persona.py` and restart
-`echo-local-ai-neco.service`.
-
-See the raw host reading without involving the model:
+Missing sensors stay missing. Snapshots older than 60 s are treated as stale.
 
 ```bash
+# raw host reading
 python3 neco/system_vitals.py
 ```
 
-The feature is installed automatically by `scripts/setup-persona.py`. The only container bridge is the read-only runtime snapshot:
+Enable / refresh:
 
-```text
-host Linux -> .runtime/system-vitals.json -> Open WebUI filter -> Neco context
+```bash
+./scripts/start-neco.sh
+# after collector/filter changes
+python3 scripts/setup-persona.py
+systemctl --user restart echo-local-ai-neco.service
 ```
 
-No privileged container, no shell execution from chat, and no write controls are exposed. For now she can feel the fever; she cannot turn the thermostat.
+No privileged container, no write access, no shell from chat. She can feel the fever; she cannot turn the thermostat.
 
 ## Small brain, modest rent
 
-The default is **`llama3.2:1b`** with the compact [lite persona](neco/persona-lite.md). It is a starting point for smaller machines, not a guarantee of great answers. Check `ollama ps` during generation to see CPU/GPU placement.
+Default: **`llama3.2:1b`** + compact lite persona. Good starting point for smaller machines. Check `ollama ps` during generation for CPU/GPU placement.
 
-Settings live in `.env`: model, owner name, idle interval, and persona choice. `NECO_PERSONA=full` selects the [longer backstory](neco/persona.md) for stronger hardware. After changing the model or persona, rerun the Ollama helper and finish setup, then start a new chat.
+Settings live in `.env` (model, owner name, idle interval, persona). `NECO_PERSONA=full` selects the longer backstory for stronger hardware. After changing model or persona, rerun the Ollama helper + finish-setup, then start a new chat.
 
 <details>
-<summary><b>Maintenance hatch — checks, updates, and the off switch</b></summary>
+<summary><b>Maintenance hatch</b></summary>
 
-| What you want | Command |
-| --- | --- |
-| Check the installation | `bash ./scripts/doctor.sh` |
+| What you want              | Command |
+|----------------------------|---------|
+| Check the installation     | `bash ./scripts/doctor.sh` |
 | Pause unsolicited thoughts | `systemctl --user stop echo-local-ai-neco.service` |
-| Start them again | `bash ./scripts/start-neco.sh` |
-| Inspect Docker | `sudo docker compose ps` |
-| Replace the soundtrack | `./scripts/set-music.sh /path/to/song.mp3` |
+| Start them again           | `bash ./scripts/start-neco.sh` |
+| Inspect Docker             | `sudo docker compose ps` |
+| Replace the soundtrack     | `./scripts/set-music.sh /path/to/song.mp3` |
 
-Update from the repo folder:
+Update:
 
 ```bash
 git pull --ff-only origin main
@@ -188,15 +145,13 @@ python3 scripts/setup-persona.py
 systemctl --user restart echo-local-ai-neco.service
 ```
 
-Hard-refresh afterward. Persona setup replaces the system prompt and avatar and disables built-in tools; other model settings are preserved.
-
-Missing models, service failures, and firewall checks: [setup notes](docs/setup.md).
+Hard-refresh afterward. More troubleshooting in [docs/setup.md](docs/setup.md).
 
 </details>
 
 ## Credits
 
-Built on **Open WebUI v0.11.4**, with VT323 typography, supplied Neco/cat images, and **tearreflection — upgrades**.
+Built on **Open WebUI v0.11.4**, VT323 typography, supplied Neco/cat images, and **tearreflection — upgrades**.
 
 Original project code is MIT-licensed. Upstream software, fonts, images, and music have separate rights: [third-party notices](THIRD_PARTY_NOTICES.md) · [Open WebUI license](OPENWEBUI_LICENSE.txt).
 
