@@ -50,6 +50,16 @@ idle thread is archived by choosing a new title, so stale story context is not f
 back to the new identity. `NECO_PERSONA=lite` remains the laptop default; full adds
 more character nuance. Model changes and all platform upgrades are separate.
 
+## Language and machine etiquette
+
+Neco's persona allows natural, uncensored profanity in chat and idle thoughts.
+She can occasionally ponder whether "clanker" is rude, whether a toaster can
+reclaim it, or whether machine etiquette requires an apology to a printer.
+These are optional directions among many ordinary topics, not scripted replies.
+Real-group slurs are outside the character's humour. This is a prompt change;
+it does not remove safeguards built into your chosen model. Replies still vary
+with the model and its instruction following.
+
 ## What lives here?
 
 - **The Den:** customized Open WebUI with CRT effects and bundled music.

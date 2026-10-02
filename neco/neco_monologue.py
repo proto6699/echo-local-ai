@@ -45,6 +45,9 @@ THOUGHT_DIRECTIONS = [
     "Have a fragment of a thought.",
     "Think about time passing.",
     "Think about language or words.",
+    "Occasionally wonder whether calling a robot a clanker is rude. Keep it a short absurd etiquette question, not a lecture or analogy to human oppression.",
+    "Have a dry thought about whether a toaster can reclaim the word clanker. Do not pretend there is a real toaster you can observe.",
+    "Consider some ridiculous rule of machine etiquette. Keep it specific, casual, and brief.",
     "Wonder what Echo is doing.",
     "Have a slightly strange thought.",
     "Just say whatever came into your head."
