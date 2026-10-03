@@ -153,6 +153,6 @@ Hard-refresh afterward. More troubleshooting in [docs/setup.md](docs/setup.md).
 
 Built on **Open WebUI v0.11.4**, VT323 typography, supplied Neco/cat images, and **tearreflection — upgrades**.
 
-Original project code is MIT-licensed. Upstream software, fonts, images, and music have separate rights: [third-party notices](THIRD_PARTY_NOTICES.md) · [Open WebUI license](OPENWEBUI_LICENSE.txt).
+Original project code is MIT-licensed. Upstream software, fonts, images, and music have separate rights: [third-party notices](docs/licenses/THIRD_PARTY_NOTICES.md) · [Open WebUI license](docs/licenses/OPENWEBUI_LICENSE.txt).
 
 *The toaster has declined to comment.*
